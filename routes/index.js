@@ -1,15 +1,17 @@
 var cp = require('child_process');
 var express = require('express');
 var router = express.Router();
+var bcrypt = require('bcrypt-nodejs');
+var db = require('../database/db');
+/*
 var mongodb = require('mongodb');
 var mongo = mongodb.MongoClient;
-var bcrypt = require('bcrypt-nodejs');
 var Server = mongodb.Server,
     Db = mongodb.Db,
     BSON = mongodb.BSONPure;
 var server = new Server('localhost', 27017, {auto_reconnect: true});
 db = new Db('infor-system', server);
- 
+*/
 /* GET home page. */
 router.get('/', function(req, res) {
     if(req.session.user){

@@ -19,8 +19,8 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
-var io = require('socket.io')(server);
+var server = app.server;
+var io = app.io;
 
 /**
  * Listen on provided port, on all network interfaces.

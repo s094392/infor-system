@@ -7,13 +7,31 @@ var bodyParser = require('body-parser');
 
 var session = require('express-session');  
 var Settings = require('./database/settings');  
-var db = require('./database/msession'); 
+var db = require('./database/db'); 
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
+
+//Socket.io
+io.sockets.on('connection', function(socket){
+    socket.on('reqUser', function(){
+        db.open(function(err){
+            console.log("jizz");
+            db.collection('user', function(error, collection){
+                collection.find({}, {_id:0}, function(err, res){
+                    res.toArray(function(err, res){
+                        socket.emit('giveUsers', res);
+                    })
+                });
+            });
+        });
+    }) 
+});
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -75,16 +93,5 @@ app.use(function(err, req, res, next) {
   });
 });
 
-//Socket.io
-io.sockets.on('connection', function(socket){
-    socket.on(sendUser, function(){
-        db.open(function(err){
-            db.collection('user', function(error, collection){
-                var data = collection.find();
-                socket.emit('giveUsers', data);
-            });
-        });
-    }) 
-});
-
-module.exports = app;
+server.listen(3000);
+//module.exports = app;

@@ -7,8 +7,11 @@
 <script>
     var socket = io();
     socket.emit('reqUser');
-    socket.on('giveUser', function(res){
-        $("users").append(res);    
+    socket.on('giveUsers', function(res){
+        console.log(res);
+        for(i=0; i<res.length;i++){
+            $("#users").append(res[i].username + "<br>" + res[i].password + "<br>");    
+        }
     });
 </script>
 <% include footer.ejs %>
