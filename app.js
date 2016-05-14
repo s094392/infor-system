@@ -5,7 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-
 var session = require('express-session');  
 var Settings = require('./database/settings');  
 var db = require('./database/msession'); 
@@ -22,8 +21,7 @@ app.set('view engine', 'ejs');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json()); app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -77,5 +75,16 @@ app.use(function(err, req, res, next) {
   });
 });
 
+//Socket.io
+io.sockets.on('connection', function(socket){
+    socket.on(sendUser, function(){
+        db.open(function(err){
+            db.collection('user', function(error, collection){
+                var data = collection.find();
+                socket.emit('giveUsers', data);
+            });
+        });
+    }) 
+});
 
 module.exports = app;

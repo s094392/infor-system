@@ -1,0 +1,14 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container">
+    <div id="users">
+    </div>
+</div>
+<script>
+    var socket = io();
+    socket.emit('reqUser');
+    socket.on('giveUser', function(res){
+        $("users").append(res);    
+    });
+</script>
+<% include footer.ejs %>

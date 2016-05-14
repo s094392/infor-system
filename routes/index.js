@@ -1,3 +1,4 @@
+var cp = require('child_process');
 var express = require('express');
 var router = express.Router();
 var mongodb = require('mongodb');
@@ -11,7 +12,10 @@ db = new Db('infor-system', server);
  
 /* GET home page. */
 router.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
+    if(req.session.user){
+        res.render('home', { title: 'Home', user: req.session.user });
+    }
+    res.render('index', { title: 'Express' });
 });
 
 router.route('/signup')
@@ -24,9 +28,7 @@ router.route('/signup')
             if(error)
             console.log(error);
             bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                console.log(req.body.username);
-                console.log(hash);
-                collection.insert({username:req.body.username, password:hash});
+                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on')});
             });
             res.redirect('/home');
         });
@@ -39,7 +41,6 @@ router.route('/login')
 })
 .post(function(req, res) {
     var user = {};
-    var jizz  = "uu";
     db.open(function(err){
         db.collection('user', function(error, collection){
             if(error)
@@ -48,23 +49,22 @@ router.route('/login')
                 if(data){
                     if(bcrypt.compareSync(req.body.password, data.password)){
                         user = {
-                            username: req.body.username
+                            username: data.username,
+                            admin: data.admin
                         }
-                        jizz = "oo";
                         req.session.user = user;
-                        console.log(req.session.user);
                         console.log(user);
-        res.redirect('/home');
+                        if(req.session.user){
+                            res.redirect('/home');
+                        }
+                        else{
+                            res.redirect('/login');
+                        }
                     }
                 }
             });
         });
     });
-    console.log(jizz);
-    if(req.session.user){
-        res.redirect('/home');
-    }
-    res.redirect('/login');
 });
  
 router.get('/logout', function(req, res) {
@@ -75,9 +75,47 @@ router.get('/logout', function(req, res) {
 router.get('/home', function(req, res) {
     console.log("jiaa");
     authentication(req, res);
-    res.render('home', { title: 'Home', user: user });
+    res.render('home', { title: 'Home', user: req.session.user });
 });
+
+// Admin pages
+router.route('/admin')
+.get(function(req, res){
+    authentication(req, res);
+    adminAuthentication(req, res);
+    res.render('admin', { title: 'Admin', user: req.session.user });
+})
+
+router.route('/admin/users')
+.get(function(req, res){
+    authentication(req, res);
+    adminAuthentication(req, res);
+    res.render('userManage', { title: 'User Manage', user: req.session.user });
+    db.open(function(err){
+        db.collection('user', function(error, collection){
+            var data = collection.find();
+
+        });
+    });
+})
+
+/*
+router.route('/workstation')
+.get(function(req, res){
+    authentication(req, res);
+    res.render('workstation', { title: 'Workstation', user: user });
+})
+.post(function(req, res){
+
+});
+*/
  
+function adminAuthentication(req, res){
+    if (!req.session.user.admin){
+        return res.redirect('/login');
+    }
+}
+
 function authentication(req, res) {
     if (!req.session.user) {
         return res.redirect('/login');
