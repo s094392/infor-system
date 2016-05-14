@@ -21,7 +21,6 @@ var io = require('socket.io')(server);
 io.sockets.on('connection', function(socket){
     socket.on('reqUser', function(){
         db.open(function(err){
-            console.log("jizz");
             db.collection('user', function(error, collection){
                 collection.find({}, {_id:0}, function(err, res){
                     res.toArray(function(err, res){
@@ -31,7 +30,18 @@ io.sockets.on('connection', function(socket){
             });
         });
     }) 
+    socket.on('reqStatus', function(username){
+        db.open(function(err){
+            console.log("jizz");
+            db.collection('user', function(error, collection){
+                collection.findOne({username: username}, function(err, res){
+                    socket.emit('giveStatus', res);
+                });
+            });
+        }); 
+    });
 });
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

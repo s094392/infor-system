@@ -30,7 +30,7 @@ router.route('/signup')
             if(error)
             console.log(error);
             bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on')});
+                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on', workstation: parseInt(req.body.workstation), workstationUsed: 0});
             });
             res.redirect('/home');
         });
@@ -55,7 +55,6 @@ router.route('/login')
                             admin: data.admin
                         }
                         req.session.user = user;
-                        console.log(user);
                         if(req.session.user){
                             res.redirect('/home');
                         }
