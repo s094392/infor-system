@@ -26,11 +26,13 @@ router.route('/signup')
 })
 .post(function(req, res) {
     db.open(function(err){
+        if(err)
+            console.log(err);
         db.collection('user', function(error, collection){
             if(error)
-            console.log(error);
+                console.log(error);
             bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on', workstation: parseInt(req.body.workstation), workstationUsed: 0});
+                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
             });
             res.redirect('/home');
         });
@@ -44,9 +46,10 @@ router.route('/login')
 .post(function(req, res) {
     var user = {};
     db.open(function(err){
+        console.log(err);
         db.collection('user', function(error, collection){
             if(error)
-            console.log(error);
+                console.log(error);
             collection.findOne({username:req.body.username}, function(err, data){
                 if(data){
                     if(bcrypt.compareSync(req.body.password, data.password)){
@@ -74,9 +77,14 @@ router.get('/logout', function(req, res) {
 });
  
 router.get('/home', function(req, res) {
-    console.log("jiaa");
     authentication(req, res);
     res.render('home', { title: 'Home', user: req.session.user });
+});
+
+router.route('/ipython')
+.get(function(req, res){
+    authentication(req, res);
+    res.render('ipython', { title: 'Ipython', user: req.session.user });
 });
 
 // Admin pages
@@ -92,13 +100,43 @@ router.route('/admin/users')
     authentication(req, res);
     adminAuthentication(req, res);
     res.render('userManage', { title: 'User Manage', user: req.session.user });
-    db.open(function(err){
-        db.collection('user', function(error, collection){
-            var data = collection.find();
+})
 
+router.route('/admin/workstations')
+.get(function(req, res){
+    authentication(req, res);
+    adminAuthentication(req, res);
+    res.render('workstation', { title: 'Workstation', user: req.session.user });
+})
+.post(function(req, res){
+    db.open(function(err){
+        console.log(err);
+        db.collection('workstation', function(error, collection){
+            if(error)
+                console.log(error);
+            collection.insert({port: req.body.port, domain: req.body.domain, owner: req.body.owner});
         });
     });
+    res.redirect('/admin/workstations')
+});
+
+router.route('/admin/ipython')
+.get(function(req, res){
+    authentication(req, res);
+    adminAuthentication(req, res);
+    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user });
 })
+.post(function(req, res){
+    db.open(function(err){
+        console.log(err);
+        db.collection('ipython', function(error, collection){
+            if(error)
+                console.log(error);
+            collection.insert({port: req.body.port, domain: req.body.domain, owner: req.body.owner, isUsing: false});
+        });
+    });
+    res.redirect('/admin/workstations')
+});
 
 /*
 router.route('/workstation')
@@ -122,4 +160,19 @@ function authentication(req, res) {
         return res.redirect('/login');
     }
 }
+
+function openIpython(username, port, pw){
+    cp.exec('docker run -d -p '+port+':8888 --name ' + username + port + '-e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
+        if(stdout)
+            console.log(stdout);
+    });
+}
+
+function closeIpython(username, port){
+    cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
+        if(stdout)
+            console.log(steout);
+    });
+}
+
 module.exports = router;

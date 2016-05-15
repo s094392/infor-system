@@ -1,0 +1,14 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container">
+    <div id="ipython">
+    </div>
+</div>
+<script>
+    var socket = io();
+    socket.emit('reqIpythonList', "<%= user.username %>");
+    socket.on('giveIpythonList', function(res){
+        console.log(res);
+    });
+</script>
+<% include footer.ejs %>

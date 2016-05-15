@@ -40,6 +40,27 @@ io.sockets.on('connection', function(socket){
             });
         }); 
     });
+    socket.on('reqIpythonList', function(socket, username){
+        db.open(function(err){
+            console.log(username);
+            db.collection('ipython', function(error, collection){
+                collection.find({username: username}, {_id: 0}, function(err, res){
+                    console.log(username);
+                    res.toArray(function(err, res){
+                        socket.emit('giveIpythonList', res);
+                    });
+                });
+            });
+        });
+    });
+    /*
+    socker.on('delData', function(num){
+        db.open(function(err){
+            console.log("dellllllal");
+            db.collection('user')
+        })
+    });
+    */
 });
 
 // view engine setup
@@ -72,14 +93,14 @@ app.use('/signup', routes);
 app.use('/login', routes);
 app.use('/logout', routes);
 
+// error handlers
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
-
-// error handlers
 
 // development error handler
 // will print stacktrace
