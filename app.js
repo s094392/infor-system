@@ -62,7 +62,7 @@ io.sockets.on('connection', function(socket){
                     console.log(res);
                     if(res){
                         openIpython(username, port, "jizz");
-                        collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                        collection.update({owner: username, port: port}, {$set: {isUsing: true, used: true}});
                     }
                 });
             });
@@ -89,19 +89,26 @@ io.sockets.on('connection', function(socket){
 
 // Ipython Notebook
 function openIpython(username, port, pw){
+    db.open(function(err){
+        db.coollection('ipython', function(error, collection){
+            collection.findOne({owner: username, port: port}, function(err, res){
+                if(res.used){
+                    cp.exec('docker start ' + username + port, function(err, stdout, stderr){
+                        if(stdout)
+                            console.log(stdout);
+                    });
+                }
+                else{
+                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
+                        if(stdout)
+                            console.log(stdout);
+                    });
+                    collection.update({owner: username, port: port}, {$set: {used: true}});
+                }
+            });
+        });
+    });
     console.log("openipython");
-    if(){
-        cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
-            if(stdout)
-                console.log(stdout);
-        });
-    }
-    else{
-        cp.exec('docker start ' + username + port, function(err, stdout, stderr){
-            if(stdout)
-                console.log(stdout);
-        });
-    }
 }
 
 function closeIpython(username, port){
