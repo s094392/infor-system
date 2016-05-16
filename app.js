@@ -16,6 +16,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+var cp = require('child_process');
 
 //Socket.io
 io.sockets.on('connection', function(socket){
@@ -32,7 +33,6 @@ io.sockets.on('connection', function(socket){
     }) 
     socket.on('reqStatus', function(username){
         db.open(function(err){
-            console.log("jizz");
             db.collection('user', function(error, collection){
                 collection.findOne({username: username}, function(err, res){
                     socket.emit('giveStatus', res);
@@ -40,12 +40,11 @@ io.sockets.on('connection', function(socket){
             });
         }); 
     });
-    socket.on('reqIpythonList', function(socket, username){
+    socket.on('reqIpythonList', function(username){
         db.open(function(err){
             console.log(username);
             db.collection('ipython', function(error, collection){
-                collection.find({username: username}, {_id: 0}, function(err, res){
-                    console.log(username);
+                collection.find({owner: username}, {_id: 0}, function(err, res){
                     res.toArray(function(err, res){
                         socket.emit('giveIpythonList', res);
                     });
@@ -53,15 +52,66 @@ io.sockets.on('connection', function(socket){
             });
         });
     });
-    /*
-    socker.on('delData', function(num){
+    socket.on('openIpython', function(username, port, pw){
+        port = parseInt(port);
         db.open(function(err){
-            console.log("dellllllal");
-            db.collection('user')
-        })
+            db.collection('ipython', function(error, collection){
+                console.log(username);
+                console.log(port);
+                collection.findOne({owner: username, port: port}, function(err, res){
+                    console.log(res);
+                    if(res){
+                        openIpython(username, port, "jizz");
+                        collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                    }
+                });
+            });
+        });
     });
-    */
+    socket.on('closeIpython', function(username, port){
+        port = parseInt(port);
+        db.open(function(err){
+            db.collection('ipython', function(error, collection){
+                console.log(username);
+                console.log(port);
+                collection.findOne({owner: username, port: port}, function(err, res){
+                    console.log(res);
+                    if(res){
+                        console.log("ipythonnnn");
+                        closeIpython(username, port);
+                        collection.update({owner: username, port: port}, {$set: {isUsing: false}});
+                    }
+                });
+            });
+        });
+    });
 });
+
+// Ipython Notebook
+function openIpython(username, port, pw){
+    console.log("openipython");
+    if(){
+        cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
+            if(stdout)
+                console.log(stdout);
+        });
+    }
+    else{
+        cp.exec('docker start ' + username + port, function(err, stdout, stderr){
+            if(stdout)
+                console.log(stdout);
+        });
+    }
+}
+
+function closeIpython(username, port){
+    console.log("cloaseipython");
+    cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
+        console.log('docker stop ' + username + port);
+        if(stdout)
+            console.log(stdout);
+    });
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

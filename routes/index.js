@@ -3,15 +3,7 @@ var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
-/*
-var mongodb = require('mongodb');
-var mongo = mongodb.MongoClient;
-var Server = mongodb.Server,
-    Db = mongodb.Db,
-    BSON = mongodb.BSONPure;
-var server = new Server('localhost', 27017, {auto_reconnect: true});
-db = new Db('infor-system', server);
-*/
+
 /* GET home page. */
 router.get('/', function(req, res) {
     if(req.session.user){
@@ -32,7 +24,7 @@ router.route('/signup')
             if(error)
                 console.log(error);
             bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                collection.insert({username:req.body.username, password:hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
+                collection.insert({username: req.body.username, password: hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
             });
             res.redirect('/home');
         });
@@ -58,13 +50,14 @@ router.route('/login')
                             admin: data.admin
                         }
                         req.session.user = user;
-                        if(req.session.user){
-                            res.redirect('/home');
-                        }
-                        else{
-                            res.redirect('/login');
-                        }
+                        res.redirect('/home');
                     }
+                    else{
+                        res.redirect('/login');
+                    }
+                }
+                else{
+                    res.redirect('/login');
                 }
             });
         });
@@ -76,6 +69,7 @@ router.get('/logout', function(req, res) {
     res.redirect('/');
 });
  
+// Users pages
 router.get('/home', function(req, res) {
     authentication(req, res);
     res.render('home', { title: 'Home', user: req.session.user });
@@ -132,7 +126,7 @@ router.route('/admin/ipython')
         db.collection('ipython', function(error, collection){
             if(error)
                 console.log(error);
-            collection.insert({port: req.body.port, domain: req.body.domain, owner: req.body.owner, isUsing: false});
+            collection.insert({port: parseInt(req.body.port), domain: req.body.domain, owner: req.body.owner, isUsing: false});
         });
     });
     res.redirect('/admin/workstations')
@@ -161,18 +155,5 @@ function authentication(req, res) {
     }
 }
 
-function openIpython(username, port, pw){
-    cp.exec('docker run -d -p '+port+':8888 --name ' + username + port + '-e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
-        if(stdout)
-            console.log(stdout);
-    });
-}
-
-function closeIpython(username, port){
-    cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
-        if(stdout)
-            console.log(steout);
-    });
-}
 
 module.exports = router;
