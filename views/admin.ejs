@@ -1,8 +1,20 @@
 <% include header.ejs %>
-<div class="container">
-    <legend>Admin</legend>
-    <a href="/admin/users">Users management</a>
-    <a href="/admin/workstations">Workstation</a>
-    <a href="/admin/ipython">Ipython</a>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2 ">
+            <% include userDetials.ejs %>
+        </div>
+        <div class="col-xs-10 col-md-10 ">
+            <ul class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li class="active">Admin</li>
+            </ul>
+            <div id="admin" class="list-group">
+                <a href="/admin/users" class='list-group-item'>Users management</a>
+                <a href="/admin/workstations" class='list-group-item'>Workstation</a>
+                <a href="/admin/ipython" class='list-group-item'>Ipython</a>
+            </div>
+        </div>
+    </div>
 </div>
 <% include footer.ejs %>

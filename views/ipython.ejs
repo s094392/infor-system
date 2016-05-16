@@ -1,7 +1,18 @@
 <% include header.ejs %>
 <script src="/socket.io/socket.io.js"></script>
-<div class="container">
-    <div id="ipython">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2 ">
+            <% include userDetials.ejs %>
+        </div>
+        <div class="col-xs-10 col-md-10 ">
+            <ul class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li class="active">Ipython notebook</li>
+            </ul>
+            <div id="ipython" class="list-group">
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -28,13 +39,13 @@
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
-                $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='closeIpython(" + res[i].port + ")'>close</button>" + "<br>");
+                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
             }
             else if(res[i].used){
-                $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='openIpython(" + res[i].port + ")'>open</button>" + "<button onClick='delIpython(" + res[i].port + ")'>remove</button>" + "<br>");
+                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a>");
             }
             else{
-                $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='openIpython(" + res[i].port + ")'>open</button>" + "<br>");
+                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary'  onClick='openIpython(" + res[i].port + ")'>open</a>" + "</a>");
             }
         }
         console.log(res);
