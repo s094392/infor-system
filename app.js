@@ -62,7 +62,7 @@ io.sockets.on('connection', function(socket){
                     console.log(res);
                     if(res){
                         openIpython(username, port, "jizz");
-                        collection.update({owner: username, port: port}, {$set: {isUsing: true, used: true}});
+                        collection.update({owner: username, port: port}, {$set: {isUsing: true}});
                     }
                 });
             });
@@ -85,12 +85,29 @@ io.sockets.on('connection', function(socket){
             });
         });
     });
+    socket.on('delIpython', function(username, port){
+        port = parseInt(port);
+        db.open(function(err){
+            db.collection('ipython', function(error, collection){
+                console.log(username);
+                console.log(port);
+                collection.findOne({owner: username, port: port}, function(err, res){
+                    console.log(res);
+                    if(res){
+                        console.log("ipythonnnn");
+                        delIpython(username, port);
+                        collection.update({owner: username, port: port}, {$set: {used: false}});
+                    }
+                });
+            });
+        });
+    });
 });
 
 // Ipython Notebook
 function openIpython(username, port, pw){
     db.open(function(err){
-        db.coollection('ipython', function(error, collection){
+        db.collection('ipython', function(error, collection){
             collection.findOne({owner: username, port: port}, function(err, res){
                 if(res.used){
                     cp.exec('docker start ' + username + port, function(err, stdout, stderr){
@@ -115,6 +132,15 @@ function closeIpython(username, port){
     console.log("cloaseipython");
     cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
         console.log('docker stop ' + username + port);
+        if(stdout)
+            console.log(stdout);
+    });
+}
+
+function delIpython(username, port){
+    console.log("removeipython");
+    cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
+        console.log('docker rm ' + username + port);
         if(stdout)
             console.log(stdout);
     });

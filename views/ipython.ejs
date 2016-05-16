@@ -7,20 +7,31 @@
 <script>
     var socket = io();
     function openIpython(port){
-        socket.emit('openIpython', "<%= user.username %>", port)
+        socket.emit('openIpython', "<%= user.username %>", port);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
+
     function closeIpython(port){
-        socket.emit('closeIpython', "<%= user.username %>", port)
+        socket.emit('closeIpython', "<%= user.username %>", port);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
+
+    function delIpython(port){
+        socket.emit('delIpython', "<%= user.username %>", port);
+        $("#ipython").empty();
+        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
+    }
+
     socket.emit('reqIpythonList', "<%= user.username %>");
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
                 $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='closeIpython(" + res[i].port + ")'>close</button>" + "<br>");
+            }
+            else if(res[i].used){
+                $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='openIpython(" + res[i].port + ")'>open</button>" + "<button onClick='delIpython(" + res[i].port + ")'>remove</button>" + "<br>");
             }
             else{
                 $("#ipython").append(res[i].port + " " + res[i].domain + " " + res[i].isUsing + "<button onClick='openIpython(" + res[i].port + ")'>open</button>" + "<br>");
