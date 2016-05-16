@@ -61,8 +61,8 @@ io.sockets.on('connection', function(socket){
                 collection.findOne({owner: username, port: port}, function(err, res){
                     console.log(res);
                     if(res){
-                        openIpython(username, port, "jizz");
                         collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                        openIpython(username, port, "jizz");
                     }
                 });
             });
@@ -78,8 +78,8 @@ io.sockets.on('connection', function(socket){
                     console.log(res);
                     if(res){
                         console.log("ipythonnnn");
-                        closeIpython(username, port);
                         collection.update({owner: username, port: port}, {$set: {isUsing: false}});
+                        closeIpython(username, port);
                     }
                 });
             });

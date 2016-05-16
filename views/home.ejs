@@ -11,8 +11,6 @@
             </ul>
             <div id="home" class="list-group">
                 <h1>Welcome <%= user.username %></h1>
-                <div id="status">
-                </div>
                 <a class="btn" href="/ipython">Ipython</a>
                 <% if (user.admin) {%>
                 <a class="btn" href="/admin">Admin</a>
@@ -21,11 +19,4 @@
         </div>
     </div>
 </div>
-<script>
-    var socket = io();
-    socket.emit('reqStatus', "<%= user.username %>");
-    socket.on('giveStatus', function(res){
-        $('#status').append("Username: " + res.username + "<br>Workstation quota: " + res.workstation + "<br>Workstation used: " + res.workstationUsed );
-    });
-</script>
 <% include footer.ejs %>
