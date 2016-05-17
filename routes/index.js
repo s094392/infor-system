@@ -1,5 +1,5 @@
 var cp = require('child_process');
-var express = require('express');
+gar express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
@@ -79,6 +79,16 @@ router.route('/ipython')
 .get(function(req, res){
     authentication(req, res);
     res.render('ipython', { title: 'Ipython', user: req.session.user });
+})
+.post(function(req, res){
+    db.open(function(err){
+        console(err);
+        db.collection('ipython', function(error, collection){
+            if(error)
+        	console.log(error);
+	    collection.findOne({port:req.body})
+        });
+    });
 });
 
 // Admin pages
