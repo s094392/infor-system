@@ -1,4 +1,14 @@
 <script src="/javascripts/jquery.min.js"></script> 
 <script src="/javascripts/bootstrap.min.js"></script>
 </body>
+<script src="/javascripts/jquery.loadie.min.js">
+<script>
+$(function(){
+    $('body').loadie(); // Change the wrapper if wanted.
+    var progress = 1;
+    setTimeout(function() {
+        $('body').loadie(progress);
+    }, 3000);
+})
+</script>
 </html>

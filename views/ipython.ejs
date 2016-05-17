@@ -12,13 +12,16 @@
             </ul>
             <div id="ipython" class="list-group">
             </div>
+            
         </div>
     </div>
 </div>
 <script>
     var socket = io();
     function openIpython(port){
-        socket.emit('openIpython', "<%= user.username %>", port);
+        $("")
+        var pw=document.getElementById('pw').value;
+        socket.emit('openIpython', "<%= user.username %>", port, pw);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
