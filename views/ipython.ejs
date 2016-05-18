@@ -12,15 +12,15 @@
             </ul>
             <div id="ipython" class="list-group">
             </div>
-            
         </div>
     </div>
 </div>
 <script>
     var socket = io();
-    function openIpython(port){
-        $("")
-        var pw=document.getElementById('pw').value;
+    function openIpython(port, pwId){
+        console.log(pwId);
+        //var pw=document.getElementById(pwId).value;
+        var pw = pwId.value;
         socket.emit('openIpython', "<%= user.username %>", port, pw);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
@@ -48,7 +48,7 @@
                 $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a>");
             }
             else{
-                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary'  onClick='openIpython(" + res[i].port + ")'>open</a>" + "</a>");
+                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a><div class='modal fade' id='myModal" + i + "'><div class='modal-dialog'><div class='modal-content'><div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button><h4 class='modal-title'>Set the password for ipython notebook</h4></div><div class='modal-body'><input type='password' id='pw" + i + "'></div><div class='modal-footer'><button type='button' class='btn btn-primary' onClick='openIpython(" + res[i].port + ", pw" + i + ")' data-dismiss='modal' >Submit</button></div></div></div></div>");
             }
         }
         console.log(res);
