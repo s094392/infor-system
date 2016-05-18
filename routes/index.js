@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
+var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -17,6 +18,17 @@ router.route('/signup')
     res.render('signup', { title: 'Sigu up' });
 })
 .post(function(req, res) {
+    console.log(req.files);
+    var tmp_path = req.body.files.photo.path;
+    var target_path = './public/userImages/' + req.body.username;
+    fs.rename(tmp_path, target_path, function(err) {
+        if (err) throw err;
+        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
+        fs.unlink(tmp_path, function() {
+            if (err) throw err;
+            res.send('File uploaded to: ' + target_path + ' - ' + req.body.files.photo.size + ' bytes');
+        });
+    });
     db.open(function(err){
         if(err)
             console.log(err);
@@ -47,7 +59,7 @@ router.route('/login')
                     if(bcrypt.compareSync(req.body.password, data.password)){
                         user = {
                             username: data.username,
-                            admin: data.admin
+                            admin: data.admin,
                         }
                         req.session.user = user;
                         res.redirect('/home');

@@ -12,16 +12,18 @@
             </ul>
             <div id="ipython" class="list-group">
             </div>
+            <dev id="modals">
+            </dev>
         </div>
     </div>
 </div>
 <script>
     var socket = io();
-    function setPassword(port){
-	$("#ipython").empty().append("<legend>Sign up</legend><div class='form-group'><label class='col-sm-3 control-label' for='port'>port</label><div class='col-sm-9'><input type='text' class='form-control' id='port' name='port' value='"+port+"' disable></div></div><div class='form-group'><label class='col-sm-3 control-label' for='password'>Password</label><div class='col-sm-9'><input type='password' class='form-control' id='password' name='password' placeholder='Password' required></div></div><div class='form-group'><div class='col-sm-offset-3 col-sm-9'><button type='submit' class='btn btn-primary'>Submit</button></div></div>")}
-
-    function openIpython(port){
-        socket.emit('openIpython', "<%= user.username %>", port);
+    function openIpython(port, pwId){
+        console.log(pwId);
+        //var pw=document.getElementById(pwId).value;
+        var pw = pwId.value;
+        socket.emit('openIpython', "<%= user.username %>", port, pw);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
@@ -42,14 +44,18 @@
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
-                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a><div id='" + res[i].port + "'></div>");
+                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
             }
             else if(res[i].used){
                 $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
             }
             else{
-                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='setPassword(" + res[i].port + ")'>open</a>" + "</a><div id='" + res[i].port + "'></div>");
+            $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a>");
+            $("#modals").append("<div class='modal fade' id='myModal" + i + "'><div class='modal-dialog'><div class='modal-content'><div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button><h4 class='modal-title'>Set the password for ipython notebook</h4></div><div class='modal-body'><input type='password' id='pw" + i + "'></div><div class='modal-footer'><button type='button' class='btn btn-primary' data-dismiss='modal' onClick='openIpython(" + res[i].port + ", pw" + i + ")'>Submit</button></div></div></div></div>");
             }
+        }
+        if(res.length==0){
+            $("#ipythol").append("<div class='well'>Ha! Ha! You have no ipython notebook quota!</div>");
         }
         console.log(res);
     });

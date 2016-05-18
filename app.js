@@ -15,6 +15,7 @@ var users = require('./routes/users');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+var bcrypt = require('bcrypt-nodejs');
 
 var cp = require('child_process');
 
@@ -62,7 +63,7 @@ io.sockets.on('connection', function(socket){
                     console.log(res);
                     if(res){
                         collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-                        openIpython(username, port, "jizz");
+                        openIpython(username, port, pw);
                     }
                 });
             });
@@ -77,7 +78,6 @@ io.sockets.on('connection', function(socket){
                 collection.findOne({owner: username, port: port}, function(err, res){
                     console.log(res);
                     if(res){
-                        console.log("ipythonnnn");
                         collection.update({owner: username, port: port}, {$set: {isUsing: false}});
                         closeIpython(username, port);
                     }
@@ -94,7 +94,6 @@ io.sockets.on('connection', function(socket){
                 collection.findOne({owner: username, port: port}, function(err, res){
                     console.log(res);
                     if(res){
-                        console.log("ipythonnnn");
                         delIpython(username, port);
                         collection.update({owner: username, port: port}, {$set: {used: false}});
                     }
@@ -102,7 +101,16 @@ io.sockets.on('connection', function(socket){
             });
         });
     });
+    socket.on('reqDocker', function(){
+        cp.exec('docker ps -al', function(err, stdout, stderr){
+            socket.emit('giveDocker', stdout);
+        })
+    })
 });
+
+function checkToken(username, token){
+    bcrypt.compareSync('bcrypt' + username + 'ilovezhizhi', token);
+}
 
 // Ipython Notebook
 function openIpython(username, port, pw){
@@ -111,12 +119,13 @@ function openIpython(username, port, pw){
             collection.findOne({owner: username, port: port}, function(err, res){
                 if(res.used){
                     cp.exec('docker start ' + username + port, function(err, stdout, stderr){
+                        console.log('docker start ' + username + port);
                         if(stdout)
                             console.log(stdout);
                     });
                 }
                 else{
-                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD='+pw+'" ipython/notebook', function(err, stdout, stderr){
+                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
                         if(stdout)
                             console.log(stdout);
                     });
@@ -159,7 +168,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(session({
-    cookie: { maxAge: 600000 },
+    cookie: { maxAge: 14 * 24 * 3600000 },
     secret: Settings.COOKIE_SECRET,
     resave: true,
     saveUninitialized: true
