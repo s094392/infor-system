@@ -1,5 +1,5 @@
 var cp = require('child_process');
-gar express = require('express');
+var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
@@ -86,9 +86,18 @@ router.route('/ipython')
         db.collection('ipython', function(error, collection){
             if(error)
         	console.log(error);
-	    collection.findOne({port:req.body})
+	    collection.findOne({port:req.body.port}, function(err, data){
+	        if(data){
+
+		} 
+	    });
         });
     });
+});
+
+router.get('/workstation', function(req, res){
+    authentication(req, res);
+    res.render('workstation', { title: 'Workstation', user: req.session.user });
 });
 
 // Admin pages
@@ -110,7 +119,7 @@ router.route('/admin/workstations')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
-    res.render('workstation', { title: 'Workstation', user: req.session.user });
+    res.render('workstationAdmin', { title: 'Workstation', user: req.session.user });
 })
 .post(function(req, res){
     db.open(function(err){
