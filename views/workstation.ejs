@@ -1,32 +1,13 @@
 <% include header.ejs %>
-<div class="container">
-    <form class="col-sm-offset-4 col-sm-4 form-horizontal" role="form" method="post">
-        <fieldset>
-            <legend>Sign up</legend>
-            <div class="form-group">
-                <label class="col-sm-3 control-label" for="port">Port</label>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control" id="port" name="port" placeholder="Port" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-3 control-label" for="domain">Domain</label>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control" id="domain" name="password" placeholder="Domain" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-3 control-label" for="owner">Owner</label>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control" id="owner" name="owner" placeholder="Owner" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="col-sm-offset-3 col-sm-9">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-            </div>
-        </fieldset>
-    </form>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2">
+	    <% include userDetials.ejs %>
+	</div>
+	<div class="col-xs-10 col-md-10">
+	</div>
+    </div>
 </div>
+
 <% include footer.ejs %>
