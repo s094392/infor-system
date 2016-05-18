@@ -4,6 +4,7 @@ var router = express.Router();
 var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
 var fs = require('fs');
+var escape = require('escape-html');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -36,7 +37,7 @@ router.route('/signup')
             if(error)
                 console.log(error);
             bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                collection.insert({username: req.body.username, password: hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
+                collection.insert({username: escape(req.body.username), password: hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
             });
             res.redirect('/home');
         });
@@ -60,6 +61,10 @@ router.route('/login')
                         user = {
                             username: data.username,
                             admin: data.admin,
+                            key: {
+                                method: 'bcrypt',
+                                token: bcrypt.hashSync('bcrypt' + data.username + 'ILoveINfOR')
+                            }
                         }
                         req.session.user = user;
                         res.redirect('/home');

@@ -19,28 +19,29 @@
 </div>
 <script>
     var socket = io();
+    var key = JSON.parse('<%- JSON.stringify(user.key) %>');
     function openIpython(port, pwId){
         console.log(pwId);
         //var pw=document.getElementById(pwId).value;
         var pw = pwId.value;
-        socket.emit('openIpython', "<%= user.username %>", port, pw);
+        socket.emit('openIpython', "<%= user.username %>", port, pw, key);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
 
     function closeIpython(port){
-        socket.emit('closeIpython', "<%= user.username %>", port);
+        socket.emit('closeIpython', "<%= user.username %>", port, key);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
 
     function delIpython(port){
-        socket.emit('delIpython', "<%= user.username %>", port);
+        socket.emit('delIpython', "<%= user.username %>", port, key);
         $("#ipython").empty();
         setTimeout("socket.emit('reqIpythonList', '<%= user.username %>')", 500);
     }
 
-    socket.emit('reqIpythonList', "<%= user.username %>");
+    socket.emit('reqIpythonList', "<%= user.username %>", key);
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){

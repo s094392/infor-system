@@ -41,65 +41,73 @@ io.sockets.on('connection', function(socket){
             });
         }); 
     });
-    socket.on('reqIpythonList', function(username){
-        db.open(function(err){
-            console.log(username);
-            db.collection('ipython', function(error, collection){
-                collection.find({owner: username}, {_id: 0}, function(err, res){
-                    res.toArray(function(err, res){
-                        socket.emit('giveIpythonList', res);
+    socket.on('reqIpythonList', function(username, key){
+        if(checkToken(username, key)){
+            db.open(function(err){
+                console.log(username);
+                db.collection('ipython', function(error, collection){
+                    collection.find({owner: username}, {_id: 0}, function(err, res){
+                        res.toArray(function(err, res){
+                            socket.emit('giveIpythonList', res);
+                        });
                     });
                 });
             });
-        });
+        }
     });
-    socket.on('openIpython', function(username, port, pw){
-        port = parseInt(port);
-        db.open(function(err){
-            db.collection('ipython', function(error, collection){
-                console.log(username);
-                console.log(port);
-                collection.findOne({owner: username, port: port}, function(err, res){
-                    console.log(res);
-                    if(res){
-                        collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-                        openIpython(username, port, pw);
-                    }
+    socket.on('openIpython', function(username, port, pw, key){
+        if(checkToken(username, key)){
+            port = parseInt(port);
+            db.open(function(err){
+                db.collection('ipython', function(error, collection){
+                    console.log(username);
+                    console.log(port);
+                    collection.findOne({owner: username, port: port}, function(err, res){
+                        console.log(res);
+                        if(res){
+                            collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                            openIpython(username, port, pw);
+                        }
+                    });
                 });
             });
-        });
+        }
     });
-    socket.on('closeIpython', function(username, port){
-        port = parseInt(port);
-        db.open(function(err){
-            db.collection('ipython', function(error, collection){
-                console.log(username);
-                console.log(port);
-                collection.findOne({owner: username, port: port}, function(err, res){
-                    console.log(res);
-                    if(res){
-                        collection.update({owner: username, port: port}, {$set: {isUsing: false}});
-                        closeIpython(username, port);
-                    }
+    socket.on('closeIpython', function(username, port, key){
+        if(checkToken(username, key)){
+            port = parseInt(port);
+            db.open(function(err){
+                db.collection('ipython', function(error, collection){
+                    console.log(username);
+                    console.log(port);
+                    collection.findOne({owner: username, port: port}, function(err, res){
+                        console.log(res);
+                        if(res){
+                            collection.update({owner: username, port: port}, {$set: {isUsing: false}});
+                            closeIpython(username, port);
+                        }
+                    });
                 });
             });
-        });
+        }
     });
-    socket.on('delIpython', function(username, port){
-        port = parseInt(port);
-        db.open(function(err){
-            db.collection('ipython', function(error, collection){
-                console.log(username);
-                console.log(port);
-                collection.findOne({owner: username, port: port}, function(err, res){
-                    console.log(res);
-                    if(res){
-                        delIpython(username, port);
-                        collection.update({owner: username, port: port}, {$set: {used: false}});
-                    }
+    socket.on('delIpython', function(username, port, key){
+        if(checkToken(username, key)){
+            port = parseInt(port);
+            db.open(function(err){
+                db.collection('ipython', function(error, collection){
+                    console.log(username);
+                    console.log(port);
+                    collection.findOne({owner: username, port: port}, function(err, res){
+                        console.log(res);
+                        if(res){
+                            delIpython(username, port);
+                            collection.update({owner: username, port: port}, {$set: {used: false}});
+                        }
+                    });
                 });
             });
-        });
+        }
     });
     socket.on('reqDocker', function(){
         cp.exec('docker ps -al', function(err, stdout, stderr){
@@ -108,8 +116,10 @@ io.sockets.on('connection', function(socket){
     })
 });
 
-function checkToken(username, token){
-    bcrypt.compareSync('bcrypt' + username + 'ilovezhizhi', token);
+function checkToken(username, key){
+    console.log(key.token);
+    console.log(key.method + username + 'ILoveINfOR');
+    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
 }
 
 // Ipython Notebook
