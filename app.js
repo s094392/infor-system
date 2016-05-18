@@ -168,7 +168,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(session({
-    cookie: { maxAge: 600000 },
+    cookie: { maxAge: 14 * 24 * 3600000 },
     secret: Settings.COOKIE_SECRET,
     resave: true,
     saveUninitialized: true
