@@ -6,8 +6,62 @@
 	    <% include userDetials.ejs %>
 	</div>
 	<div class="col-xs-10 col-md-10">
+	    <ul class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li class="active">Workstation<li>
+	    </ul>
+
+	    <div id="workstation" class="list-group">
+	    </div>
+
+	    <div id="modals">
+	    </div>
 	</div>
     </div>
 </div>
+<script>
+    var socket = io();
+    var key = JSON.parse('<%- JSON.stringify(user.key)%>');
+    function openWorkstation(port, pwId){
+	console.log(pwId);
+	var pw = pwId.value;
+	socket.emit('openWorkstation', "<%= user.username %>", port, pw, key);
+	$("#workstation").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>')", 500);
+    }
+
+    function closeWorkstation(port){
+	socket.emit('closeWorkstation', "<%= user.username %>", port, key);
+	$("#workstation").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>')", 500);
+    }
+
+    function delWorkstation(port){
+	socket.emit('delWorkstation', <%= user.username %>, port, key);
+	$("#workstation").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>')", 500);
+    }
+
+    socket.emit('reqWorkstationList', "<%= user.username%>")
+    socket.on('giveWorkstation', function(res){
+        for(i=0; i<res.length; i++){
+            if(res[i].isUsing){
+                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeWorkstation(" + res[i].port + ")'>close</a>" + "</a>");
+            }
+            else if(res[i].used){
+                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openWorkstation(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delWorkstation(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
+            }
+            else{
+            $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a>");
+            $("#modals").append("<div class='modal fade' id='myModal" + i + "'><div class='modal-dialog'><div class='modal-content'><div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button><h4 class='modal-title'>Set the password for ipython notebook</h4></div><div class='modal-body'><input type='password' id='pw" + i + "'></div><div class='modal-footer'><button type='button' class='btn btn-primary' data-dismiss='modal' onClick='openWorkstation(" + res[i].port + ", pw" + i + ")'>Submit</button></div></div></div></div>");
+            }
+        }
+        if(res.length==0){
+            $("#workstation").append("<div class='well'>Ha! Ha! You have no ipython notebook quota!</div>");
+        }
+        console.log(res);
+    });
+
+</script>
 
 <% include footer.ejs %>
