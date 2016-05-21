@@ -11,6 +11,7 @@ var db = require('./database/db');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var workstation = require('./workstation');
 
 var app = express();
 var server = require('http').Server(app);
@@ -62,8 +63,7 @@ io.sockets.on('connection', function(socket){
             port = parseInt(port);
             db.open(function(err){
                 db.collection('ipython', function(error, collection){
-                    console.log(username);
-                    console.log(port);
+                    console.log(username+' open ipython notebook on '+port);
                     collection.findOne({owner: username, port: port}, function(err, res){
                         console.log(res);
                         if(res){
@@ -80,8 +80,7 @@ io.sockets.on('connection', function(socket){
             port = parseInt(port);
             db.open(function(err){
                 db.collection('ipython', function(error, collection){
-                    console.log(username);
-                    console.log(port);
+                    console.log(username+' close ipython notebook on '+port);
                     collection.findOne({owner: username, port: port}, function(err, res){
                         console.log(res);
                         if(res){
@@ -98,8 +97,7 @@ io.sockets.on('connection', function(socket){
             port = parseInt(port);
             db.open(function(err){
                 db.collection('ipython', function(error, collection){
-                    console.log(username);
-                    console.log(port);
+                    console.log(username+' delete ipython notebook on '+port);
                     collection.findOne({owner: username, port: port}, function(err, res){
                         console.log(res);
                         if(res){
@@ -119,7 +117,7 @@ io.sockets.on('connection', function(socket){
 		db.collection('workstation', function(error, collection){
 		    collection.find({owner: username}, {_id:0}, function(err, res){
 			res.toArray(function(err, res){
-			    socket.emit('fiveWorkstationList', res);
+			    socket.emit('giveWorkstationList', res);
 			});
 		    });
 		});
@@ -128,15 +126,15 @@ io.sockets.on('connection', function(socket){
     });
     socket.on('openWorkstation', function(username, port, pw, key){
 	if(checkToken(username, key)){
+	    port = parseInt(port);
 	    db.open(function(err){
 		db.collection('workstation', function(error, collection){
-		    console.log(username+ ' open workstation on '+port);
 		    collection.findOne({owner: username, port: port}, function(err, res){
-			console.log('workstation is: ')
 			console.log(res);
 			if(res){
 			    collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-			    openWorkstation(username, port, pw);
+			    workstation.openWorkstation(username, port, pw);
+			    console.log(username+' open workstation on '+port);
 			}
 		    });
 		});
@@ -148,13 +146,12 @@ io.sockets.on('connection', function(socket){
 	    port = parseInt(port);
 	    db.open(function(err){
 		db.collection('workstation', function(error, collection){
-		    console.log(username+ ' close workstation on '+port);
 		    collection.findOne({owner: username, port: port}, function(err, res){
-			console.log('workstation is: ');
 			console.log(res);
 			if(res){
 			    collection.update({owner: username, port: port}, {$set: {isUsing: false}});
-			    closeWorkstation(user, port)
+			    workstation.closeWorkstation(username, port)
+			    console.log(username+ ' close workstation on '+port);
 			}
 		    });
 		});
@@ -166,13 +163,12 @@ io.sockets.on('connection', function(socket){
 	    port = parseInt(port);
 	    db.open(function(err){
 		db.collection('workstation', function(error, collection){
-		    console.log(username+' delete workstation on '+port);
 		    collection.findOne({owner: username, port, port}, function(err, res){
-			console.log('workstation is: ');
 			console.log(res);
 			if(res){
-			    delWorkstation(username, port);
+			    workstation.delWorkstation(username, port);
 			    collection.update({owner: username, port: port}, {$set: {used: false}});
+			    console.log(username+' delete workstation on '+port);
 			}
 		    });
 		});
@@ -182,7 +178,7 @@ io.sockets.on('connection', function(socket){
 
 
     socket.on('reqDocker', function(){
-        cp.exec('docker ps -al', function(err, stdout, stderr){
+        cp.exec('docker ps -a', function(err, stdout, stderr){
             socket.emit('giveDocker', stdout);
         })
     })
@@ -201,13 +197,14 @@ function openIpython(username, port, pw){
             collection.findOne({owner: username, port: port}, function(err, res){
                 if(res.used){
                     cp.exec('docker start ' + username + port, function(err, stdout, stderr){
-                        console.log('docker start ' + username + port);
+                        console.log('docker start ' + username + port + ' ipython');
                         if(stdout)
                             console.log(stdout);
                     });
                 }
                 else{
                     cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
+			console.log('docker run ' + username + port + ' ipython.')
                         if(stdout)
                             console.log(stdout);
                     });
@@ -216,13 +213,12 @@ function openIpython(username, port, pw){
             });
         });
     });
-    console.log("openipython");
 }
 
 function closeIpython(username, port){
     console.log("cloaseipython");
     cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
-        console.log('docker stop ' + username + port);
+        console.log('docker stop ' + username + port + ' ipython.');
         if(stdout)
             console.log(stdout);
     });
@@ -231,51 +227,12 @@ function closeIpython(username, port){
 function delIpython(username, port){
     console.log("removeipython");
     cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
-        console.log('docker rm ' + username + port);
+        console.log('docker rm ' + username + port + ' ipython.');
         if(stdout)
             console.log(stdout);
     });
 }
 
-//Workstation
-function openWorkstation(username, port, pw){
-    db.open(function(err){
-	db.collection('workstation', function(error, collection){
-	    collection.findOne({owner: username, port: port}, function(err, res){
-		if(res.used){
-		    cp.exec('docker start ' + username + port, function(err, stdout, stderr){
-			console.log('docker start '+usernam+port+' workstation.');
-			if(stdout)
-			    console.log(stdout);
-		    });
-		}
-		else{
-		    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + 'ubuntu:latest', function(err, stdout, stderr){
-			console.log('docker restart '+username+port+' workstation.');
-			if(stdout)
-			    console.log(stdout);
-		    });
-		}
-	    });
-	});
-    });
-}
-
-function closeWorkstation(username, port){
-    cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
-	console.log('docker stop '+username+port+' workstation.');
-	if(stdout)
-	    console.log(stdout);
-    });
-}
-
-function delWorkstation(username, port){
-    cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
-	console.log('docker delete '+username+port+' workstation.');
-	if(stdout)
-	    console.log(stdout);
-    });
-}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

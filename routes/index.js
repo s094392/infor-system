@@ -144,13 +144,13 @@ router.route('/admin/workstations')
         db.collection('workstation', function(error, collection){
             if(error)
                 console.log(error);
-            collection.insert({port: req.body.port, domain: req.body.domain, owner: req.body.owner});
+            collection.insert({port: parseInt(req.body.port), domain: req.body.domain, owner: req.body.owner, isUsing: false, used: false});
         });
     });
-    res.redirect('/admin/workstations')
+    res.redirect('/admin')
 });
 
-router.route('/admin/ipython')
+router.route('/admin/ipythons')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
@@ -165,20 +165,11 @@ router.route('/admin/ipython')
             collection.insert({port: parseInt(req.body.port), domain: req.body.domain, owner: req.body.owner, isUsing: false});
         });
     });
-    res.redirect('/admin/workstations')
+    res.redirect('/admin')
 });
 
-/*
-router.route('/workstation')
-.get(function(req, res){
-    authentication(req, res);
-    res.render('workstation', { title: 'Workstation', user: user });
-})
-.post(function(req, res){
 
-});
-*/
- 
+
 function adminAuthentication(req, res){
     if (!req.session.user.admin){
         return res.redirect('/login');
