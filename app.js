@@ -124,7 +124,7 @@ io.sockets.on('connection', function(socket){
 	    });
 	}
     });
-    socket.on('openWorkstation', function(username, port, pw, key){
+    socket.on('openWorkstation', function(username, port, pw, image, key){
 	if(checkToken(username, key)){
 	    port = parseInt(port);
 	    db.open(function(err){
@@ -133,8 +133,8 @@ io.sockets.on('connection', function(socket){
 			console.log(res);
 			if(res){
 			    collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-			    workstation.openWorkstation(username, port, pw);
-			    console.log(username+' open workstation on '+port);
+			    workstation.openWorkstation(username, port, pw, image);
+			    console.log(username+' open '+image+' workstation on '+port);
 			}
 		    });
 		});

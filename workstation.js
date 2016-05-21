@@ -8,7 +8,7 @@ var db = require('./database/db');
 
 module.exports = {
 	//Workstation
-	openWorkstation: (username, port, pw) => {
+	openWorkstation: (username, port, pw, image) => {
 	    db.open(function(err){
 		db.collection('workstation', function(error, collection){
 		    collection.findOne({owner: username, port: port}, function(err, res){
@@ -28,7 +28,7 @@ module.exports = {
 			    });
 			}
 			else{
-			    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' ubuntu:14.04', function(err, stdout, stderr){
+			    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' ' + image + ' /bin/bash', function(err, stdout, stderr){
 				console.log('docker run '+username+port+' workstation.');
 				if(stdout){
 				    console.log('--------stdout: --------')

@@ -2,3 +2,4 @@ node_modules
 .*.swp
 *.swp
 adminMongo/
+npm-debug.log
