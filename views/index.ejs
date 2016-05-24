@@ -1,6 +1,14 @@
 <% include header.ejs %>
     <div class="container-fulid">
-        <h1>Welcome to <%= title %></h1>
-        <p><a href="/login">Login</a></p>
+        <div style="text-align: center"><h1>Welcome to <%= title %></h1></div>
+	<div class="row">
+	    <br>
+	    <br>
+	    <br>
+            <div style="text-align: center"><a class="btn btn-primary" href="/login" role="buttom">Login</a></div>
+	    <br>
+            <div style="text-align: center"><a class="btn" href="/signup" role="buttom">Signup</a></div>
+	  </div>
+	</div>
     </div>
 <% include footer.ejs %>

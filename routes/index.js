@@ -16,37 +16,38 @@ router.get('/', function(req, res) {
 
 router.route('/signup')
 .get(function(req, res) {
-    res.render('signup', { title: 'Sigu up' });
+    res.render('signup', { title: 'Sign up', wrong: '' });
 })
 .post(function(req, res) {
     console.log(req.files);
-    var tmp_path = req.body.files.photo.path;
-    var target_path = './public/userImages/' + req.body.username;
-    fs.rename(tmp_path, target_path, function(err) {
-        if (err) throw err;
-        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-        fs.unlink(tmp_path, function() {
-            if (err) throw err;
-            res.send('File uploaded to: ' + target_path + ' - ' + req.body.files.photo.size + ' bytes');
-        });
-    });
     db.open(function(err){
         if(err)
             console.log(err);
         db.collection('user', function(error, collection){
             if(error)
                 console.log(error);
-            bcrypt.hash(req.body.username, null, null, function(err, hash) {
-                collection.insert({username: escape(req.body.username), password: hash, admin: (req.body.admin==='on'), workstation: parseInt(req.body.workstation), workstationUsed: 0});
-            });
-            res.redirect('/home');
+	    collection.findOne({username: req.body.username}, function(err, data) {
+		if(data)
+		    res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
+		else{
+		    if( req.body.password !== req.body.passwordV ){
+			res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
+		    }
+		    else{
+			bcrypt.hash(req.body.password, null, null, function(err, hash) {
+			    collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
+			});
+			res.redirect('/login');
+		    }
+		}
+	    });
         });
     });
 });
  
 router.route('/login')
 .get(function(req, res) {
-    res.render('login', { title: 'Login' });
+    res.render('login', { title: 'Login', wrong: '' });
 })
 .post(function(req, res) {
     var user = {};
@@ -70,15 +71,19 @@ router.route('/login')
                         res.redirect('/home');
                     }
                     else{
-                        res.redirect('/login');
+                        res.render('login', { title: 'Login', wrong: 'Wrong password' });
                     }
                 }
                 else{
-                    res.redirect('/login');
+                    res.render('login', { title: 'Login', wrong: 'Wrong username' });
                 }
             });
         });
     });
+});
+
+router.get('/forgot_pw', function(req, res) {
+    res.render('forgot_pw', {title: 'Forgot password'});
 });
  
 router.get('/logout', function(req, res) {
@@ -172,13 +177,13 @@ router.route('/admin/ipythons')
 
 function adminAuthentication(req, res){
     if (!req.session.user.admin){
-        return res.redirect('/login');
+        return res.redirect('/');
     }
 }
 
 function authentication(req, res) {
     if (!req.session.user) {
-        return res.redirect('/login');
+        return res.redirect('/');
     }
 }
 

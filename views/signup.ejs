@@ -9,37 +9,31 @@
                     <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
                 </div>
             </div>
+
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="password">Password</label>
                 <div class="col-sm-9">
                     <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="col-sm-3 control-label" for="workstation">workstation nums</label>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control" id="workstation" name="workstation" placeholder="Number" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-3 control-label" for="photo">Photo</label>
-                <div class="col-sm-9">
-                    <input type="file" class="form-control" id="photo" name="photo">
-                </div>
 
-            </div>
             <div class="form-group">
-                <label class="col-sm-3 control-label" for="admin">Is Admin</label>
+                <label class="col-sm-3 control-label" for="password">Password Validation</label>
                 <div class="col-sm-9">
-                    <input type="checkbox" class="form-control" id="admin" name="admin">
+                    <input type="password" class="form-control" id="passwordV" name="passwordV" placeholder="Password Validation" required>
                 </div>
-
             </div>
+
             <div class="form-group">
                 <div class="col-sm-offset-3 col-sm-9">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </div>
+	
+	    <div>
+		<p style="color: red"><%= wrong%></p>
+	    </div>
+
         </fieldset>
     </form>
 </div>
