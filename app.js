@@ -58,6 +58,28 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+    socket.on('reqIpythonListAdmin', function(username, user, key) {
+	if(checkToken(username, key)) {
+	    db.open(function(err) {
+		console.log(username);
+		db.collection('user', function(error, collection) {
+		    collection.findOne({username: username}, function(err, res) {
+			if(res.admin){
+			    db.collection('ipython', function(error, collection) {
+				collection.find({owner: user}, {_id: 0}, function(err, res) {
+				    res.toArray(function(err, res) {
+console.log(res);
+console.log("jizzzzzzz");
+					socket.emit('giveIpythonList', res);
+				    });
+				});
+			    });
+			}
+		    });
+		});
+	    });
+	}
+    });
     socket.on('openIpython', function(username, port, pw, key){
         if(checkToken(username, key)){
             port = parseInt(port);

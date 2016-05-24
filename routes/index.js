@@ -11,7 +11,7 @@ router.get('/', function(req, res) {
     if(req.session.user){
         res.render('home', { title: 'Home', user: req.session.user });
     }
-    res.render('index', { title: 'Express' });
+    res.render('index', { title: 'INFOR System' });
 });
 
 router.route('/signup')
@@ -159,18 +159,33 @@ router.route('/admin/ipythons')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
-    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user });
+    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: '' });
 })
 .post(function(req, res){
     db.open(function(err){
         console.log(err);
-        db.collection('ipython', function(error, collection){
+        db.collection('user', function(error, collection){
             if(error)
                 console.log(error);
-            collection.insert({port: parseInt(req.body.port), domain: req.body.domain, owner: req.body.owner, isUsing: false});
+	    collection.findOne({username: req.body.owner}, function(err, data){
+		if(data){
+		    db.collection('ipython', function(error, collection){
+		        collection.findOne({port: parseInt(req.body.port)}, function(err, data){
+			    if(data){
+			        res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'port used.' });
+			    }
+			    else{
+			        collection.insert({name: req.body.name, port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
+			    }
+		        });
+		    });
+		}
+		else{
+		    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'no such user.' });
+		}
+	    });
         });
     });
-    res.redirect('/admin')
 });
 
 

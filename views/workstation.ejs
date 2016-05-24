@@ -24,14 +24,21 @@
     var key = JSON.parse('<%- JSON.stringify(user.key)%>');
     function openWorkstation(port, pwId, osId){
 	console.log(pwId);
-	var pw = pwId.value;
-	var Os = {
-	    Ubuntu: 'ubuntu:14.04',
-	    Arch: 'base/archlinux',
-	    Centos: 'centos',
-	    Opensuse: 'opensuse'
-	};
-	var os = Os[osId.value];
+	if(pwId)
+	    var pw = pwId.value;
+	else
+	    var pw = "jizz";
+	if (osId){
+	    var Os = {
+	        Ubuntu: 'ubuntu:14.04',
+	        Arch: 'base/archlinux',
+	        Centos: 'centos',
+	        Opensuse: 'opensuse'
+	    };
+	    var os = Os[osId.value];
+	}
+	else
+	    var os = "jizz";
 	socket.emit('openWorkstation', "<%= user.username %>", port, pw, os, key);
 	$("#workstation").empty();
 	$("#modals").empty();
