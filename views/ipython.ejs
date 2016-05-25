@@ -45,7 +45,7 @@
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
-                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
+                $("#ipython").append("<a href='https://ipng.infor.org:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
             }
             else if(res[i].used){
                 $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
