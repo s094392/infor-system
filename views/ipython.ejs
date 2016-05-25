@@ -39,9 +39,6 @@
 	    console.log("restart");
 	    var pw = "jizz"
 	}
-        socket.emit('openIpython', "<%= user.username %>", port, pw, key);
-	//setTimeout("$('#modals').empty()", 100000);
-        $("#ipython").empty();
     }
 
     function closeIpython(port){
@@ -57,9 +54,13 @@
     }
 
     socket.emit('reqIpythonList', "<%= user.username %>", key);
-
+    
+    socket.on('reloadIpythonList', function() {
+        $("#ipython").empty();
+        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
+    });
+    
     socket.on('giveIpythonList', function(res){
-	console.log("asfas");
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
                 $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");

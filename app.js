@@ -59,39 +59,39 @@ io.sockets.on('connection', function(socket){
         }
     });
     socket.on('reqIpythonListAdmin', function(username, user, key) {
-	if(checkToken(username, key)) {
-	    db.open(function(err) {
-		console.log(username);
-		db.collection('user', function(error, collection) {
-		    collection.findOne({username: username}, function(err, res) {
-			if(res.admin){
-			    db.collection('ipython', function(error, collection) {
-				collection.find({owner: user}, {_id: 0}, function(err, res) {
-				    res.toArray(function(err, res) {
-console.log(res);
-console.log("jizzzzzzz");
-					socket.emit('giveIpythonList', res);
-				    });
-				});
-			    });
-			}
-		    });
-		});
-	    });
-	}
+        if(checkToken(username, key)) {
+            db.open(function(err) {
+                console.log(username);
+                db.collection('user', function(error, collection) {
+                    collection.findOne({username: username}, function(err, res) {
+                        if(res.admin){
+                            db.collection('ipython', function(error, collection) {
+                                collection.find({owner: user}, {_id: 0}, function(err, res) {
+                                    res.toArray(function(err, res) {
+                                        console.log(res);
+                                        console.log("jizzzzzzz");
+                                        socket.emit('giveIpythonList', res);
+                                    });
+                                });
+                            });
+                        }
+                    });
+                });
+            });
+        }
     });
     socket.on('newIpython', function(username, key) {
 	if(checkToken(username, key)){
 	    db.open(function(err) {
-		db.collection('ipythonPortList', function(error, collection) {
-		    collection.findOne({using: false}, function(err, res) {
-			collection.update({port: res.port}, {$set: {using: true}});
-			db.collection('ipython', function(error, collection) {
-			    console.log({name: username+res.port, port: res.port, owner: username});
-			    collection.insert({name: username+res.port, port: res.port, owner: username});
-			});
-		    });
-		});
+            db.collection('ipythonPortList', function(error, collection) {
+                collection.findOne({using: false}, function(err, res) {
+                    collection.update({port: res.port}, {$set: {using: true}});
+                    db.collection('ipython', function(error, collection) {
+                        console.log({name: username+res.port, port: res.port, owner: username});
+                        collection.insert({name: username+res.port, port: res.port, owner: username});
+                    });
+                });
+            });
 	    });
 	}
     });
@@ -106,9 +106,9 @@ console.log("jizzzzzzz");
                         if(res){
                             collection.update({owner: username, port: port}, {$set: {isUsing: true}});
                             if(openIpython(username, port, pw)){
-				console.log("opennnnnnnnnnnnn.");
-				socket.emit('giveIpythonList', res);
-			    }
+				                console.log("opennnnnnnnnnnnn.");
+				                socket.emit('giveIpythonList', res);
+			                }
                         }
                     });
                 });
@@ -144,8 +144,7 @@ console.log("jizzzzzzz");
                             delIpython(username, port);
                             collection.update({owner: username, port: port}, {$set: {used: false}});
                         }
-			console.log('drop');
-			collection.dropIndex(port);
+			            collection.dropIndex(port);
                     });
                 });
             });
@@ -154,68 +153,68 @@ console.log("jizzzzzzz");
 
 //workstation
     socket.on('reqWorkstationList', function(username, key){
-	if(checkToken(username, key)){
-	    db.open(function(err){
-		db.collection('workstation', function(error, collection){
-		    collection.find({owner: username}, {_id:0}, function(err, res){
-			res.toArray(function(err, res){
-			    socket.emit('giveWorkstationList', res);
-			});
-		    });
-		});
-	    });
-	}
+        if(checkToken(username, key)){
+            db.open(function(err){
+                db.collection('workstation', function(error, collection){
+                    collection.find({owner: username}, {_id:0}, function(err, res){
+                        res.toArray(function(err, res){
+                            socket.emit('giveWorkstationList', res);
+                        });
+                    });
+                });
+            });
+        }
     });
     socket.on('openWorkstation', function(username, port, pw, image, key){
-	if(checkToken(username, key)){
-	    port = parseInt(port);
-	    db.open(function(err){
-		db.collection('workstation', function(error, collection){
-		    collection.findOne({owner: username, port: port}, function(err, res){
-			console.log(res);
-			if(res){
-			    collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-			    workstation.openWorkstation(username, port, pw, image);
-			    console.log(username+' open '+image+' workstation on '+port);
-			}
-		    });
-		});
-	    });
-	}
+	    if(checkToken(username, key)){
+	        port = parseInt(port);
+	        db.open(function(err){
+		        db.collection('workstation', function(error, collection){
+		            collection.findOne({owner: username, port: port}, function(err, res){
+			            console.log(res);
+			            if(res){
+			                collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+			                workstation.openWorkstation(username, port, pw, image);
+			                console.log(username+' open '+image+' workstation on '+port);
+			            }
+		            });
+		        });
+	        });
+	    }
     });
     socket.on('closeWorkstation', function(username, port, key){
-	if(checkToken(username, key)){
-	    port = parseInt(port);
-	    db.open(function(err){
-		db.collection('workstation', function(error, collection){
-		    collection.findOne({owner: username, port: port}, function(err, res){
-			console.log(res);
-			if(res){
-			    collection.update({owner: username, port: port}, {$set: {isUsing: false}});
-			    workstation.closeWorkstation(username, port)
-			    console.log(username+ ' close workstation on '+port);
-			}
-		    });
-		});
-	    });
-	}
+	    if(checkToken(username, key)){
+            port = parseInt(port);
+            db.open(function(err){
+                db.collection('workstation', function(error, collection){
+                    collection.findOne({owner: username, port: port}, function(err, res){
+                        console.log(res);
+                        if(res){
+                            collection.update({owner: username, port: port}, {$set: {isUsing: false}});
+                            workstation.closeWorkstation(username, port)
+                            console.log(username+ ' close workstation on '+port);
+                        }
+                    });
+                });
+            });
+	    }
     });
     socket.on('delWorkstation', function(username, port, key){
-	if(checkToken(username, key)){
-	    port = parseInt(port);
-	    db.open(function(err){
-		db.collection('workstation', function(error, collection){
-		    collection.findOne({owner: username, port, port}, function(err, res){
-			console.log(res);
-			if(res){
-			    workstation.delWorkstation(username, port);
-			    collection.update({owner: username, port: port}, {$set: {used: false}});
-			    console.log(username+' delete workstation on '+port);
-			}
-		    });
-		});
-	    });
-	}
+        if(checkToken(username, key)){
+            port = parseInt(port);
+            db.open(function(err){
+                db.collection('workstation', function(error, collection){
+                    collection.findOne({owner: username, port, port}, function(err, res){
+                        console.log(res);
+                        if(res){
+                            workstation.delWorkstation(username, port);
+                            collection.update({owner: username, port: port}, {$set: {used: false}});
+                            console.log(username+' delete workstation on '+port);
+                        }
+                    });
+                });
+            });
+        }
     });
 
 
@@ -224,11 +223,6 @@ console.log("jizzzzzzz");
             socket.emit('giveDocker', stdout);
         })
     })
-});
-
-function checkToken(username, key){
-    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
-}
 
 // Ipython Notebook
 function openIpython(username, port, pw){
@@ -240,7 +234,7 @@ function openIpython(username, port, pw){
                         console.log('docker start ' + username + port + ' ipython');
                         if(stdout){
                             console.log(stdout);
-			}
+			            }
                     });
                 }
                 else{
@@ -248,14 +242,13 @@ function openIpython(username, port, pw){
 			console.log('docker run ' + username + port + ' ipython.')
                         if(stdout){
                             console.log(stdout);
-			}
+                            socket.emit('reloadIpythonList');
+			            }
                     });
-                    collection.update({owner: username, port: port}, {$set: {used: true}});
                 }
             });
         });
     });
-    return true;
 }
 
 function closeIpython(username, port){
@@ -275,6 +268,16 @@ function delIpython(username, port){
             console.log(stdout);
     });
 }
+
+
+
+
+});
+
+function checkToken(username, key){
+    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
+}
+
 
 
 // view engine setup
