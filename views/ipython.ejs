@@ -27,38 +27,35 @@
     function newIpython(){
 	console.log("new ipython");
 	socket.emit('newIpython', "<%= user.username %>", key);
+    $("#ipython").empty();
+    setTimeout('socket.emit("reqIpythonList", "<%= user.username %>", key)', 500);
     }
 
     function openIpython(port, pwId){
         console.log(pwId);
-	if(pwId){
-	    console.log("use pw");
+	    if(pwId){
+	        console.log("use pw");
             var pw = pwId.value;
-	}
-	else{
-	    console.log("restart");
-	    var pw = "jizz"
-	}
+	    }
+	    else{
+	        console.log("restart");
+	        var pw = "jizz"
+	    }
+        socket.emit('openIpython', "<%= user.username %>", port, pw, key);
+        $("#ipython").empty();
     }
 
     function closeIpython(port){
         socket.emit('closeIpython', "<%= user.username %>", port, key);
         $("#ipython").empty();
-        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
     }
 
     function delIpython(port){
         socket.emit('delIpython', "<%= user.username %>", port, key);
         $("#ipython").empty();
-        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
     }
 
     socket.emit('reqIpythonList', "<%= user.username %>", key);
-    
-    socket.on('reloadIpythonList', function() {
-        $("#ipython").empty();
-        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
-    });
     
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){

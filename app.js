@@ -35,6 +35,7 @@ io.sockets.on('connection', function(socket){
             });
         });
     }) 
+
     socket.on('reqStatus', function(username){
         db.open(function(err){
             db.collection('user', function(error, collection){
@@ -60,6 +61,7 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
     socket.on('reqIpythonListAdmin', function(username, user, key) {
         if(checkToken(username, key)) {
             db.open(function(err) {
@@ -82,21 +84,23 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
     socket.on('newIpython', function(username, key) {
-	if(checkToken(username, key)){
-	    db.open(function(err) {
-            db.collection('ipythonPortList', function(error, collection) {
-                collection.findOne({using: false}, function(err, res) {
-                    collection.update({port: res.port}, {$set: {using: true}});
-                    db.collection('ipython', function(error, collection) {
-                        console.log({name: username+res.port, port: res.port, owner: username});
-                        collection.insert({name: username+res.port, port: res.port, owner: username});
+        if(checkToken(username, key)){
+            db.open(function(err) {
+                db.collection('ipythonPortList', function(error, collection) {
+                    collection.findOne({using: false}, function(err, res) {
+                        collection.update({port: res.port}, {$set: {using: true}});
+                        db.collection('ipython', function(error, collection) {
+                            console.log({name: username+res.port, port: res.port, owner: username});
+                            collection.insert({name: username+res.port, port: res.port, owner: username});
+                        });
                     });
                 });
             });
-	    });
-	}
+        }
     });
+
     socket.on('openIpython', function(username, port, pw, key){
         if(checkToken(username, key)){
             port = parseInt(port);
@@ -114,6 +118,7 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
     socket.on('closeIpython', function(username, port, key){
         if(checkToken(username, key)){
             port = parseInt(port);
@@ -131,6 +136,7 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
     socket.on('delIpython', function(username, port, key){
         if(checkToken(username, key)){
             port = parseInt(port);
@@ -164,6 +170,7 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
     socket.on('openWorkstation', function(username, port, pw, image, key){
 	    if(checkToken(username, key)){
 	        port = parseInt(port);
@@ -181,6 +188,7 @@ io.sockets.on('connection', function(socket){
 	        });
 	    }
     });
+
     socket.on('closeWorkstation', function(username, port, key){
 	    if(checkToken(username, key)){
             port = parseInt(port);
@@ -198,6 +206,7 @@ io.sockets.on('connection', function(socket){
             });
 	    }
     });
+
     socket.on('delWorkstation', function(username, port, key){
         if(checkToken(username, key)){
             port = parseInt(port);
@@ -216,55 +225,103 @@ io.sockets.on('connection', function(socket){
         }
     });
 
-
     socket.on('reqDocker', function(){
         cp.exec('docker ps -a', function(err, stdout, stderr){
             socket.emit('giveDocker', stdout);
         })
     })
+
+
+    // Ipython Notebook
+    function openIpython(username, port, pw){
+    db.open(function(err){
+        db.collection('ipython', function(error, collection){
+            collection.findOne({owner: username, port: port}, function(err, res){
+                if(res.used){
+                    cp.exec('docker start ' + username + port, function(err, stdout, stderr){
+                        console.log('docker start ' + username + port + ' ipython');
+                        if(stdout){
+                            console.log(stdout);
+                            collection.find({owner: username}, {_id: 0}, function(err, res){
+                                res.toArray(function(err, res){
+                                    console.log("Emittttt.");
+                                    socket.emit('giveIpythonList', res);
+                                });
+                            });
+                          }
+                    });
+                }
+                else{
+                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
+                        console.log('docker run ' + username + port + ' ipython.')
+                        if(stdout){
+                            console.log(stdout);
+                            collection.find({owner: username}, {_id: 0}, function(err, res){
+                                res.toArray(function(err, res){
+                                    console.log("Emittttt.");
+                                    socket.emit('giveIpythonList', res);
+                                });
+                            });
+                        }
+                    });
+                    collection.update({owner: username, port: port}, {$set: {used: true}});
+                    }
+                });
+            });
+        });
+    }
+
+    function closeIpython(username, port){
+        console.log("cloaseipython");
+        cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
+            console.log('docker stop ' + username + port + ' ipython.');
+            if(stdout){
+                console.log(stdout);
+                db.open(function(err){
+                    db.collection('ipython', function(error, collection) {
+                        collection.find({owner: username}, {_id: 0}, function(err, res){
+                            res.toArray(function(err, res){
+                                console.log("Emittttt.");
+                                socket.emit('giveIpythonList', res);
+                            });
+                        });
+                    });
+                });
+            }
+        });
+    }
+
+    function delIpython(username, port){
+        console.log("removeipython");
+        cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
+            console.log('docker rm ' + username + port + ' ipython.');
+            if(stdout){
+                console.log(stdout);
+                db.open(function(err){
+                    db.collection('ipython', function(error, collection) {
+                        collection.find({owner: username}, {_id: 0}, function(err, res){
+                            res.toArray(function(err, res){
+                                console.log("Emittttt.");
+                                socket.emit('giveIpythonList', res);
+                            });
+                        });
+                    });
+                });
+            }
+        });
+        db.open(function(err){
+            db.collection('ipythonPortList', function(error, collection) {
+                collection.update({port: port}, {$set: {using: false}});
+            });
+        });
+    }
+
 });
 
+
 function checkToken(username, key){
-    console.log(key.token);
-    console.log(key.method + username + pkey);
     return bcrypt.compareSync(key.method + username + pkey, key.token);
 }
-
-// Ipython Notebook
-
-function checkToken(username, key){
-    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
-}
-
-// Ipython Notebook
-
-function closeIpython(username, port){
-    console.log("cloaseipython");
-    cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
-        console.log('docker stop ' + username + port + ' ipython.');
-        if(stdout)
-            console.log(stdout);
-    });
-}
-
-function delIpython(username, port){
-    console.log("removeipython");
-    cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
-        console.log('docker rm ' + username + port + ' ipython.');
-        if(stdout)
-            console.log(stdout);
-    });
-}
-
-
-
-
-});
-
-function checkToken(username, key){
-    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
-}
-
 
 
 // view engine setup

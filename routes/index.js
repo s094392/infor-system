@@ -34,7 +34,7 @@ router.route('/signup')
                     res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
                 else{
                     if( req.body.password !== req.body.passwordV ){
-                    res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
+                        res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
                     }
                     else{
                         bcrypt.hash(req.body.password, null, null, function(err, hash) {
@@ -105,20 +105,6 @@ router.route('/ipython')
 .get(function(req, res){
     authentication(req, res);
     res.render('ipython', { title: 'Ipython', user: req.session.user });
-})
-.post(function(req, res){
-    db.open(function(err){
-        console(err);
-        db.collection('ipython', function(error, collection){
-            if(error)
-        	console.log(error);
-	    collection.findOne({port:req.body.port}, function(err, data){
-	        if(data){
-
-		} 
-	    });
-        });
-    });
 });
 
 router.get('/workstation', function(req, res){
@@ -171,23 +157,23 @@ router.route('/admin/ipythons')
         db.collection('user', function(error, collection){
             if(error)
                 console.log(error);
-	    collection.findOne({username: req.body.owner}, function(err, data){
-		if(data){
-		    db.collection('ipython', function(error, collection){
-		        collection.findOne({port: parseInt(req.body.port)}, function(err, data){
-			    if(data){
-			        res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'port used.' });
-			    }
-			    else{
-			        collection.insert({name: req.body.name, port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
-			    }
-		        });
-		    });
-		}
-		else{
-		    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'no such user.' });
-		}
-	    });
+            collection.findOne({username: req.body.owner}, function(err, data){
+                if(data){
+                    db.collection('ipython', function(error, collection){
+                        collection.findOne({port: parseInt(req.body.port)}, function(err, data){
+                            if(data){
+                                res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'port used.' });
+                            }
+                            else{
+                                collection.insert({name: req.body.name, port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
+                            }
+                        });
+                    });
+                }
+                else{
+                    res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'no such user.' });
+                }
+            });
         });
     });
     res.redirect('/admin');
@@ -201,16 +187,16 @@ router.route('/admin/ipythons/multi')
 })
 .post(function(req, res) {
     db.open(function(err) {
-	console.log(err);
-	db.collection('ipythonPortList', function(error, collection) {
-	    if(error)
-		console.log(error);
-	    var first = parseInt(req.body.first);
-	    var number = parseInt(req.body.number);
-	    for(var i=first; i<first+number; i++){
-		collection.insert({port: i, using: false});
-	    }
-	});
+        console.log(err);
+        db.collection('ipythonPortList', function(error, collection) {
+            if(error)
+                console.log(error);
+            var first = parseInt(req.body.first);
+            var number = parseInt(req.body.number);
+            for(var i=first; i<first+number; i++){
+                collection.insert({port: i, using: false});
+            }
+        });
     });
     res.redirect('/admin');
 });
