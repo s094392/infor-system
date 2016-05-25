@@ -105,10 +105,7 @@ console.log("jizzzzzzz");
                         console.log(res);
                         if(res){
                             collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-                            if(openIpython(username, port, pw)){
-				console.log("opennnnnnnnnnnnn.");
-				socket.emit('giveIpythonList', res);
-			    }
+                            openIpython(username, port, pw);
                         }
                     });
                 });
@@ -224,13 +221,6 @@ console.log("jizzzzzzz");
             socket.emit('giveDocker', stdout);
         })
     })
-});
-
-function checkToken(username, key){
-    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
-}
-
-// Ipython Notebook
 function openIpython(username, port, pw){
     db.open(function(err){
         db.collection('ipython', function(error, collection){
@@ -240,7 +230,13 @@ function openIpython(username, port, pw){
                         console.log('docker start ' + username + port + ' ipython');
                         if(stdout){
                             console.log(stdout);
-			}
+                            collection.find({owner: username}, {_id: 0}, function(err, res){
+                                res.toArray(function(err, res){
+                                    console.log("Emittttt.");
+                                    socket.emit('giveIpythonList', res);
+                                });
+                            });
+                          }
                     });
                 }
                 else{
@@ -248,6 +244,12 @@ function openIpython(username, port, pw){
 			console.log('docker run ' + username + port + ' ipython.')
                         if(stdout){
                             console.log(stdout);
+                            collection.find({owner: username}, {_id: 0}, function(err, res){
+                                res.toArray(function(err, res){
+                                    console.log("Emittttt.");
+                                    socket.emit('giveIpythonList', res);
+                                });
+                            });
 			}
                     });
                     collection.update({owner: username, port: port}, {$set: {used: true}});
@@ -255,8 +257,14 @@ function openIpython(username, port, pw){
             });
         });
     });
-    return true;
 }
+});
+
+function checkToken(username, key){
+    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
+}
+
+// Ipython Notebook
 
 function closeIpython(username, port){
     console.log("cloaseipython");
