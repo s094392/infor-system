@@ -1,7 +1,5 @@
 var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
+var path = require('path'); var favicon = require('serve-favicon'); var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
@@ -19,6 +17,10 @@ var io = require('socket.io')(server);
 var bcrypt = require('bcrypt-nodejs');
 
 var cp = require('child_process');
+
+
+var config = require('./config.json');
+var pkey = config.pkey;
 
 //Socket.io
 io.sockets.on('connection', function(socket){
@@ -105,10 +107,7 @@ io.sockets.on('connection', function(socket){
                         console.log(res);
                         if(res){
                             collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-                            if(openIpython(username, port, pw)){
-				                console.log("opennnnnnnnnnnnn.");
-				                socket.emit('giveIpythonList', res);
-			                }
+                            openIpython(username, port, pw);
                         }
                     });
                 });
@@ -223,33 +222,21 @@ io.sockets.on('connection', function(socket){
             socket.emit('giveDocker', stdout);
         })
     })
+});
+
+function checkToken(username, key){
+    console.log(key.token);
+    console.log(key.method + username + pkey);
+    return bcrypt.compareSync(key.method + username + pkey, key.token);
+}
 
 // Ipython Notebook
-function openIpython(username, port, pw){
-    db.open(function(err){
-        db.collection('ipython', function(error, collection){
-            collection.findOne({owner: username, port: port}, function(err, res){
-                if(res.used){
-                    cp.exec('docker start ' + username + port, function(err, stdout, stderr){
-                        console.log('docker start ' + username + port + ' ipython');
-                        if(stdout){
-                            console.log(stdout);
-			            }
-                    });
-                }
-                else{
-                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
-			console.log('docker run ' + username + port + ' ipython.')
-                        if(stdout){
-                            console.log(stdout);
-                            socket.emit('reloadIpythonList');
-			            }
-                    });
-                }
-            });
-        });
-    });
+
+function checkToken(username, key){
+    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
 }
+
+// Ipython Notebook
 
 function closeIpython(username, port){
     console.log("cloaseipython");

@@ -5,6 +5,9 @@ var bcrypt = require('bcrypt-nodejs');
 var db = require('../database/db');
 var fs = require('fs');
 var escape = require('escape-html');
+var config = require('../config.json');
+var mailId = config.mailId;
+var pkey = config.pkey;
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -26,21 +29,22 @@ router.route('/signup')
         db.collection('user', function(error, collection){
             if(error)
                 console.log(error);
-	    collection.findOne({username: req.body.username}, function(err, data) {
-		if(data)
-		    res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
-		else{
-		    if( req.body.password !== req.body.passwordV ){
-			res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
-		    }
-		    else{
-			bcrypt.hash(req.body.password, null, null, function(err, hash) {
-			    collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
-			});
-			res.redirect('/login');
-		    }
-		}
-	    });
+            collection.findOne({username: req.body.username}, function(err, data) {
+                if(data)
+                    res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
+                else{
+                    if( req.body.password !== req.body.passwordV ){
+                    res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
+                    }
+                    else{
+                        bcrypt.hash(req.body.password, null, null, function(err, hash) {
+                            collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
+                        });
+                        signupMail(req.body.username, req.body.password);
+                        res.redirect('/login');
+                    }
+                }
+            });
         });
     });
 });
@@ -64,7 +68,7 @@ router.route('/login')
                             admin: data.admin,
                             key: {
                                 method: 'bcrypt',
-                                token: bcrypt.hashSync('bcrypt' + data.username + 'ILoveINfOR')
+                                token: bcrypt.hashSync('bcrypt' + data.username + pkey)
                             }
                         }
                         req.session.user = user;
@@ -223,5 +227,10 @@ function authentication(req, res) {
     }
 }
 
+function signupMail(username, password){
+    cp.exec('docker exec ' + mailId + ' poste email:create ' + username + ' ' + password, function(err, stdout, stderr){
+        console.log(stdout);
+    });
+}
 
 module.exports = router;
