@@ -84,8 +84,12 @@ console.log("jizzzzzzz");
 	if(checkToken(username, key)){
 	    db.open(function(err) {
 		db.collection('ipythonPortList', function(error, collection) {
-		    collection.findOne({used: false}, function(err, res) {
-			
+		    collection.findOne({using: false}, function(err, res) {
+			collection.update({port: res.port}, {$set: {using: true}});
+			db.collection('ipython', function(error, collection) {
+			    console.log({name: username+res.port, port: res.port, owner: username});
+			    collection.insert({name: username+res.port, port: res.port, owner: username});
+			});
 		    });
 		});
 	    });
@@ -101,7 +105,10 @@ console.log("jizzzzzzz");
                         console.log(res);
                         if(res){
                             collection.update({owner: username, port: port}, {$set: {isUsing: true}});
-                            openIpython(username, port, pw);
+                            if(openIpython(username, port, pw)){
+				console.log("opennnnnnnnnnnnn.");
+				socket.emit('giveIpythonList', res);
+			    }
                         }
                     });
                 });
@@ -137,6 +144,8 @@ console.log("jizzzzzzz");
                             delIpython(username, port);
                             collection.update({owner: username, port: port}, {$set: {used: false}});
                         }
+			console.log('drop');
+			collection.dropIndex(port);
                     });
                 });
             });
@@ -218,8 +227,6 @@ console.log("jizzzzzzz");
 });
 
 function checkToken(username, key){
-    console.log(key.token);
-    console.log(key.method + username + 'ILoveINfOR');
     return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
 }
 
@@ -231,21 +238,24 @@ function openIpython(username, port, pw){
                 if(res.used){
                     cp.exec('docker start ' + username + port, function(err, stdout, stderr){
                         console.log('docker start ' + username + port + ' ipython');
-                        if(stdout)
+                        if(stdout){
                             console.log(stdout);
+			}
                     });
                 }
                 else{
                     cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
 			console.log('docker run ' + username + port + ' ipython.')
-                        if(stdout)
+                        if(stdout){
                             console.log(stdout);
+			}
                     });
                     collection.update({owner: username, port: port}, {$set: {used: true}});
                 }
             });
         });
     });
+    return true;
 }
 
 function closeIpython(username, port){

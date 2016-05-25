@@ -40,10 +40,8 @@
 	    var pw = "jizz"
 	}
         socket.emit('openIpython', "<%= user.username %>", port, pw, key);
-        $("#ipython").empty();
 	//setTimeout("$('#modals').empty()", 100000);
-	$("#modals").empty();
-        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
+        $("#ipython").empty();
     }
 
     function closeIpython(port){
@@ -59,7 +57,9 @@
     }
 
     socket.emit('reqIpythonList', "<%= user.username %>", key);
+
     socket.on('giveIpythonList', function(res){
+	console.log("asfas");
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
                 $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
@@ -75,7 +75,7 @@
         }
         if(res.length===0){
 		console.log('jizz out qt');
-            $("#ipython").append("<div class='well'>Ha! Ha! You have no ipython notebook quota!</div>");
+            $("#ipython").append("<div class='well'>Ha! Ha! You have no ipython notebook!</div>");
         }
         console.log(res);
     });

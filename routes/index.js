@@ -186,6 +186,7 @@ router.route('/admin/ipythons')
 	    });
         });
     });
+    res.redirect('/admin');
 });
 
 router.route('/admin/ipythons/multi')
@@ -206,7 +207,8 @@ router.route('/admin/ipythons/multi')
 		collection.insert({port: i, using: false});
 	    }
 	});
-    })
+    });
+    res.redirect('/admin');
 });
 
 function adminAuthentication(req, res){
