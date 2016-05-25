@@ -1,0 +1,83 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2">
+            <% include userDetials.ejs %>
+        </div>
+        <div class="col-xs-10 col-md-10">
+            <ul class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li class="active">Ipython notebook</li>
+            </ul>
+	    <div id="new">
+		<buttom class="btn btn-warning" onClick="newIpython()">New Ipython notebook</buttom>
+	    </div><br><hr>
+            <div id="ipython" class="list-group">
+            </div>
+            <dev id="modals">
+            </dev>
+        </div>
+    </div>
+</div>
+<script>
+    var socket = io();
+    var key = JSON.parse('<%- JSON.stringify(user.key) %>');
+
+    function newIpython(){
+	console.log("new ipython");
+	socket.emit('newIpython', "<%= user.username %>", key);
+    }
+
+    function openIpython(port, pwId){
+        console.log(pwId);
+	if(pwId){
+	    console.log("use pw");
+            var pw = pwId.value;
+	}
+	else{
+	    console.log("restart");
+	    var pw = "jizz"
+	}
+        socket.emit('openIpython', "<%= user.username %>", port, pw, key);
+	//setTimeout("$('#modals').empty()", 100000);
+        $("#ipython").empty();
+    }
+
+    function closeIpython(port){
+        socket.emit('closeIpython', "<%= user.username %>", port, key);
+        $("#ipython").empty();
+        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
+    }
+
+    function delIpython(port){
+        socket.emit('delIpython', "<%= user.username %>", port, key);
+        $("#ipython").empty();
+        setTimeout("socket.emit('reqIpythonList', '<%= user.username %>', key)", 500);
+    }
+
+    socket.emit('reqIpythonList', "<%= user.username %>", key);
+
+    socket.on('giveIpythonList', function(res){
+	console.log("asfas");
+        for(i=0; i<res.length; i++){
+            if(res[i].isUsing){
+                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
+            }
+            else if(res[i].used){
+		var jizz = "pw0";
+                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].name + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ", null )'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
+            }
+            else{
+            $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].name + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a>");
+            $("#modals").append("<div class='modal fade' id='myModal" + i + "'><div class='modal-dialog'><div class='modal-content'><div class='modal-header'><button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button><h4 class='modal-title'>Set the password for ipython notebook</h4></div><div class='modal-body'><input type='password' id='pw" + i + "'></div><div class='modal-footer'><button type='button' class='btn btn-primary' data-dismiss='modal' onClick='openIpython(" + res[i].port + ", pw" + i + ")'>Submit</button></div></div></div></div>");
+            }
+        }
+        if(res.length===0){
+		console.log('jizz out qt');
+            $("#ipython").append("<div class='well'>Ha! Ha! You have no ipython notebook!</div>");
+        }
+        console.log(res);
+    });
+</script>
+<% include footer.ejs %>

@@ -1,0 +1,24 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container">
+    <div id="users">
+    </div>
+</div>
+<script>
+    var socket = io();
+    var key = JSON.parse('<%- JSON.stringify(user.key) %>');
+    socket.emit('reqUser');
+    socket.on('giveUsers', function(res){
+        console.log(res);
+        for(i=0; i<res.length;i++){
+            $("#users").append("<h3>" + res[i].username + "</h3><br><div id='ipython" + res[i].username +  "'></div>");
+	    socket.emit('reqIpythonListAdmin', "<%= user.username %>", res[i].username, key);
+	    socket.on('giveIpythonList', function(res) {
+		for(j=0; j<res.length; j++)
+		$("#ipython"+res[j].owner).append("<p>" + res[j].name + ": " + res[j].port + "</p>");
+	    });
+	    $("#users").append("<hr>");
+        }
+    });
+</script>
+<% include footer.ejs %>

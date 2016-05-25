@@ -14,11 +14,21 @@ router.get('/', function(req, res) {
     if(req.session.user){
         res.render('home', { title: 'Home', user: req.session.user });
     }
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/index', { title: 'INFOR System' });
+    else
     res.render('index', { title: 'INFOR System' });
 });
 
 router.route('/signup')
 .get(function(req, res) {
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/signup', { title: 'Sign up', wrong: '' });
+    else
     res.render('signup', { title: 'Sign up', wrong: '' });
 })
 .post(function(req, res) {
@@ -41,6 +51,11 @@ router.route('/signup')
                             collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
                         });
                         signupMail(req.body.username, req.body.password);
+                        var lang = req.query.lang;
+                        
+                        if(lang==='ar')
+                        res.redirect('/login?lang=ar');
+                        else
                         res.redirect('/login');
                     }
                 }
@@ -51,6 +66,11 @@ router.route('/signup')
  
 router.route('/login')
 .get(function(req, res) {
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/login', { title: 'Login', wrong: '' });
+    else
     res.render('login', { title: 'Login', wrong: '' });
 })
 .post(function(req, res) {
@@ -72,6 +92,11 @@ router.route('/login')
                             }
                         }
                         req.session.user = user;
+                        var lang = req.query.lang;
+                        
+                        if(lang==='ar')
+                        res.redirect('/home?lang=ar');
+                        else
                         res.redirect('/home');
                     }
                     else{
@@ -87,23 +112,43 @@ router.route('/login')
 });
 
 router.get('/forgot_pw', function(req, res) {
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/forgot_pw', {title: 'Forgot password'});
+    else
     res.render('forgot_pw', {title: 'Forgot password'});
 });
  
 router.get('/logout', function(req, res) {
     req.session.user = null;
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.redirect('/?lang=ar');
+    else
     res.redirect('/');
 });
  
 // Users pages
 router.get('/home', function(req, res) {
     authentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/home', { title: 'Home', user: req.session.user });
+    else
     res.render('home', { title: 'Home', user: req.session.user });
 });
 
 router.route('/ipython')
 .get(function(req, res){
     authentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/ipython', { title: 'Ipython', user: req.session.user });
+    else
     res.render('ipython', { title: 'Ipython', user: req.session.user });
 })
 .post(function(req, res){
@@ -123,6 +168,11 @@ router.route('/ipython')
 
 router.get('/workstation', function(req, res){
     authentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/workstation', { title: 'Workstation', user: req.session.user });
+    else
     res.render('workstation', { title: 'Workstation', user: req.session.user });
 });
 
@@ -131,6 +181,11 @@ router.route('/admin')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/admin', { title: 'Admin', user: req.session.user });
+    else
     res.render('admin', { title: 'Admin', user: req.session.user });
 })
 
@@ -138,6 +193,11 @@ router.route('/admin/users')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/userManage', { title: 'User Manage', user: req.session.user });
+    else
     res.render('userManage', { title: 'User Manage', user: req.session.user });
 })
 
@@ -145,6 +205,11 @@ router.route('/admin/workstations')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/workstationAdmin', { title: 'Workstation', user: req.session.user });
+    else
     res.render('workstationAdmin', { title: 'Workstation', user: req.session.user });
 })
 .post(function(req, res){
@@ -163,6 +228,11 @@ router.route('/admin/ipythons')
 .get(function(req, res){
     authentication(req, res);
     adminAuthentication(req, res);
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: '' });
+    else
     res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: '' });
 })
 .post(function(req, res){
@@ -190,6 +260,11 @@ router.route('/admin/ipythons')
 	    });
         });
     });
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.redirect('/admin?lang=ar');
+    else
     res.redirect('/admin');
 });
 
@@ -197,7 +272,12 @@ router.route('/admin/ipythons/multi')
 .get(function(req, res) {
     authentication(req, res);
     adminAuthentication(req, res);
-    res.render('ipythonMulti', { title: 'MultiIpython' })
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.render('ar/ipythonMulti', { title: 'MultiIpython' });
+    else
+    res.render('ipythonMulti', { title: 'MultiIpython' });
 })
 .post(function(req, res) {
     db.open(function(err) {
@@ -212,17 +292,32 @@ router.route('/admin/ipythons/multi')
 	    }
 	});
     });
+    var lang = req.query.lang;
+    
+    if(lang==='ar')
+    res.redirect('/admin?lang=ar');
+    else
     res.redirect('/admin');
 });
 
 function adminAuthentication(req, res){
     if (!req.session.user.admin){
+        var lang = req.query.lang;
+        
+        if(lang==='ar')
+        return res.redirect('/?lang=ar');
+        else
         return res.redirect('/');
     }
 }
 
 function authentication(req, res) {
     if (!req.session.user) {
+        var lang = req.query.lang;
+        
+        if(lang==='ar')
+        return res.redirect('/?lang=ar');
+        else
         return res.redirect('/');
     }
 }

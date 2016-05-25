@@ -1,0 +1,109 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2">
+	    <% include userDetials.ejs %>
+	</div>
+	<div class="col-xs-10 col-md-10">
+	    <ul class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li class="active">Workstation<li>
+	    </ul>
+
+	    <div id="workstation" class="list-group">
+	    </div>
+
+	    <div id="modals">
+	    </div>
+	</div>
+    </div>
+</div>
+<script>
+    var socket = io();
+    var key = JSON.parse('<%- JSON.stringify(user.key)%>');
+    function openWorkstation(port, pwId, osId){
+	console.log(pwId);
+	if(pwId)
+	    var pw = pwId.value;
+	else
+	    var pw = "jizz";
+	if (osId){
+	    var Os = {
+	        Ubuntu: 'ubuntu:14.04',
+	        Arch: 'base/archlinux',
+	        Centos: 'centos',
+	        Opensuse: 'opensuse'
+	    };
+	    var os = Os[osId.value];
+	}
+	else
+	    var os = "jizz";
+	socket.emit('openWorkstation', "<%= user.username %>", port, pw, os, key);
+	$("#workstation").empty();
+	$("#modals").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>', key)", 500);
+    }
+
+    function closeWorkstation(port){
+	socket.emit('closeWorkstation', "<%= user.username %>", port, key);
+	$("#workstation").empty();
+	$("#modals").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>', key)", 500);
+    }
+
+    function delWorkstation(port){
+console.log('dell');
+	socket.emit('delWorkstation', "<%= user.username %>", port, key);
+	$("#workstation").empty();
+	$("#modals").empty();
+	setTimeout("socket.emit('reqWorkstationList', '<%= user.username %>', key)", 500);
+    }
+
+    socket.emit('reqWorkstationList', "<%= user.username%>", key);
+    socket.on('giveWorkstationList', function(res){
+        for(i=0; i<res.length; i++){
+            if(res[i].isUsing){
+                $("#workstation").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].port + " " + res[i].domain + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeWorkstation(" + res[i].port + ")'>close</a>" + "</a>");
+            }
+            else if(res[i].used){
+                $("#workstation").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#'  class='btn btn-primary' onClick='openWorkstation(" + res[i].port + ")'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delWorkstation(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
+            }
+            else{
+            $("#workstation").append("<a href='#' class='list-group-item'>" + res[i].port + " " + res[i].domain + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a>");
+            $("#modals").append("\
+<div class='modal fade' id='myModal" + i + "'>\
+  <div class='modal-dialog'>\
+    <div class='modal-content'>\
+      <div class='modal-header'>\
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>\
+        <h4 class='modal-title'>Set the password and Operating System for your Workstation</h4>\
+      </div>\
+      <div class='modal-body'>\
+        <input type='password' id='pw" + i + "'>\
+        <input list='os' name='os' id='os" + i + "'>\
+        <datalist id='os'>\
+	  <option value='Ubuntu'>\
+	  <option value='Arch'>\
+	  <option value='Centos'>\
+	  <option value='Opensuse'>\
+        </datalist>\
+      </div>\
+      <div class='modal-footer'>\
+        <button type='button' class='btn btn-primary' data-dismiss='modal' onClick='openWorkstation(" + res[i].port + ", pw" + i + ", os" + i + ")'>Submit</button>\
+      </div>\
+    </div>\
+  </div>\
+</div>");
+            }
+        }
+        if(res.length===0){
+	    console.log('jizz out qt');
+            $("#workstation").append("<div class='well'>Ha! Ha! You have no workstation!</div>");
+        }
+        console.log(res);
+    });
+
+</script>
+
+<% include footer.ejs %>
