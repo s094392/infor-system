@@ -188,7 +188,26 @@ router.route('/admin/ipythons')
     });
 });
 
-
+router.route('/admin/ipythons/multi')
+.get(function(req, res) {
+    authentication(req, res);
+    adminAuthentication(req, res);
+    res.render('ipythonMulti', { title: 'MultiIpython' })
+})
+.post(function(req, res) {
+    db.open(function(err) {
+	console.log(err);
+	db.collection('ipythonPortList', function(error, collection) {
+	    if(error)
+		console.log(error);
+	    var first = parseInt(req.body.first);
+	    var number = parseInt(req.body.number);
+	    for(var i=first; i<first+number; i++){
+		collection.insert({port: i, using: false});
+	    }
+	});
+    })
+});
 
 function adminAuthentication(req, res){
     if (!req.session.user.admin){

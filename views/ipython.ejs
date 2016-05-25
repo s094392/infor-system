@@ -10,6 +10,9 @@
               <li><a href="/">Home</a></li>
               <li class="active">Ipython notebook</li>
             </ul>
+	    <div id="new">
+		<buttom class="btn btn-warning" onClick="newIpython()">New Ipython notebook</buttom>
+	    </div><br><hr>
             <div id="ipython" class="list-group">
             </div>
             <dev id="modals">
@@ -20,6 +23,12 @@
 <script>
     var socket = io();
     var key = JSON.parse('<%- JSON.stringify(user.key) %>');
+
+    function newIpython(){
+	console.log("new ipython");
+	socket.emit('newIpython', "<%= user.username %>", key);
+    }
+
     function openIpython(port, pwId){
         console.log(pwId);
 	if(pwId){

@@ -80,6 +80,17 @@ console.log("jizzzzzzz");
 	    });
 	}
     });
+    socket.on('newIpython', function(username, key) {
+	if(checkToken(username, key)){
+	    db.open(function(err) {
+		db.collection('ipythonPortList', function(error, collection) {
+		    collection.findOne({used: false}, function(err, res) {
+			
+		    });
+		});
+	    });
+	}
+    });
     socket.on('openIpython', function(username, port, pw, key){
         if(checkToken(username, key)){
             port = parseInt(port);
