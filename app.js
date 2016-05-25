@@ -21,7 +21,7 @@ var bcrypt = require('bcrypt-nodejs');
 var cp = require('child_process');
 
 
-var config = require('../config.json');
+var config = require('./config.json');
 var pkey = config.pkey;
 
 //Socket.io

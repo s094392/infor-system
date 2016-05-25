@@ -192,7 +192,7 @@ function authentication(req, res) {
 }
 
 function signupMail(username, password){
-    cp.exec('docker exec ' + mailId ' poste email:create ' + username + ' ' + password, function(err, stdout, stderr){
+    cp.exec('docker exec ' + mailId + ' poste email:create ' + username + ' ' + password, function(err, stdout, stderr){
         console.log(stdout);
     });
 }
