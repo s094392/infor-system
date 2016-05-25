@@ -1,0 +1,23 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2 ">
+            <% include userDetials.ejs %>
+        </div>
+        <div class="col-xs-10 col-md-10 ">
+            <ul class="breadcrumb">
+              <li class="active">Home</li>
+            </ul>
+            <div id="home" class="list-group">
+                <h1>Welcome <%= user.username %></h1>
+                <a class="btn" href="/ipython">Ipython</a>
+                <a class="btn" href="/workstation">Workstation</a>
+                <% if (user.admin) {%>
+                <a class="btn" href="/admin">Admin</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+<% include footer.ejs %>

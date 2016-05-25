@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title><%= title %></title>
+    <!-- Bootstrap -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+</head>
+<body screen_capture_injected="true">
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/home">INFOR</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+      <ul class="nav navbar-nav">
+        <li><a href="/ipython?lang=ar">Ipython<span class="sr-only">(current)</span></a></li>
+        <li><a href="/workstation?lang=ar">Workstation</a></li>
+        <li><a href="https://mail.infor.org" target="_blank">Mail</a></li>
+	<% if (user) {%>
+  	  <% if (user.admin) {%>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Admin <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="/admin/users?lang=ar">帳號管理</a></li>
+                <li><a href="/admin/workstations?lang=ar">工作站拉</a></li>
+                <li><a href="/admin/ipythons?lang=ar">Ipython</a></li>
+                <li class="divider"></li>
+                <li><a href="/admin?lang=ar">Admin</a></li>
+                <li class="divider"></li>
+                <li><a href="http://ppt.cc/KvoL">jizzzzij</a></li>
+              </ul>
+            </li>
+ 	  <%} %>
+	<%} %>
+      </ul>
+      <% if (user) {%>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+      <%} %>
+    </div>
+  </div>
+</nav>

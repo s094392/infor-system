@@ -1,0 +1,36 @@
+<% include header.ejs %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-2 col-md-2 ">
+            <% include userDetials.ejs %>
+        </div>
+        <div class="col-xs-10 col-md-10 ">
+            <ul class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li class="active">Admin</li>
+            </ul>
+            <div id="admin" class="list-group">
+                <a href="/admin/users" class='list-group-item'>Users management</a>
+                <a href="/admin/workstations" class='list-group-item'>Workstation</a>
+                <a href="/admin/ipythons" class='list-group-item'>Ipython</a>
+            </div>
+            <div>
+                <a href="#" class='btn' onClick='reqDocker()'>Docker</a>
+            </div>
+            <div id="logs">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var socket = io();
+    function reqDocker(){
+        socket.emit('reqDocker');
+    }
+    socket.on('giveDocker', function(res){
+        $("#logs").empty();
+        $("#logs").append("<pre style='font-family:monospace;'>" + res + "></pre>");
+    })
+</script>
+<% include footer.ejs %>
