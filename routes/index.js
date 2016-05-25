@@ -7,6 +7,7 @@ var fs = require('fs');
 var escape = require('escape-html');
 var config = require('../config.json');
 var mailId = config.mailId;
+var pkey = config.pkey;
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -67,7 +68,7 @@ router.route('/login')
                             admin: data.admin,
                             key: {
                                 method: 'bcrypt',
-                                token: bcrypt.hashSync('bcrypt' + data.username + 'ILoveINfOR')
+                                token: bcrypt.hashSync('bcrypt' + data.username + pkey)
                             }
                         }
                         req.session.user = user;

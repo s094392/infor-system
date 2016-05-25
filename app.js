@@ -20,6 +20,10 @@ var bcrypt = require('bcrypt-nodejs');
 
 var cp = require('child_process');
 
+
+var config = require('../config.json');
+var pkey = config.pkey;
+
 //Socket.io
 io.sockets.on('connection', function(socket){
     socket.on('reqUser', function(){
@@ -186,8 +190,8 @@ io.sockets.on('connection', function(socket){
 
 function checkToken(username, key){
     console.log(key.token);
-    console.log(key.method + username + 'ILoveINfOR');
-    return bcrypt.compareSync(key.method + username + 'ILoveINfOR', key.token);
+    console.log(key.method + username + pkey);
+    return bcrypt.compareSync(key.method + username + pkey, key.token);
 }
 
 // Ipython Notebook
