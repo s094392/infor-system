@@ -162,6 +162,11 @@ router.get('/workstation', function(req, res){
     res.render('workstation', { title: 'Workstation', user: req.session.user });
 });
 
+router.route('/node')
+.get(function(req, res){
+    res.render('node', { title: 'Node', user: req.session.user });
+});
+
 // Admin pages
 router.route('/admin')
 .get(function(req, res){
