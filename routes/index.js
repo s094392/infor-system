@@ -350,8 +350,9 @@ function openNode(username){
                 cp.exec('git clone ' + data.github + ' /node/' + username, function(err, stdout, stderr){
                     console.log('dnoe!');
                     cp.exec('cp /node/Dockerfile /node/' + username, function(err, stdout, stderr){
-                        console.log("start building image......")
-                        cp.exec('docker build /node/' + username + ' -t ' + username + 'node', function(err, stdout, stderr){
+                        console.log("start building image......");
+                        console.log('docker build /node/' + username + ' -t ' + username + 'node');
+                        cp.exec('docker build' + ' -t ' + username + 'node /node/' + username , function(err, stdout, stderr){
                             console.log(stderr);
                             console.log(stdout);
                             console.log(stderr);
