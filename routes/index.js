@@ -344,13 +344,27 @@ function openNode(username){
             if(error)
                 console.log(error);
             collection.findOne({owner: username}, function(err, data){
-                cp.exec('rm -rf /node' + username);
-                cp.exec('mkdir -p /node/' + username);
-                cp.exec('git clone ' + data.github + ' /node/' + username);
-                cp.exec('docker build /node/' + username + '/.');
-                cp.exec('docker run --name ' + username + 'node -v /node/' + username + ':/usr/src/app node', function(err, stdout, stderr){
-                    console.log(stdout);
-                    console.log('docker run --name ' + username + 'node -v /node/' + username + ':/usr/src/app node:4-onbuild');
+                console.log('jizz');
+                cp.exec('rm -rf /node/' + username);
+                console.log('cloning in to /node/' + username + '......');
+                cp.exec('git clone ' + data.github + ' /node/' + username, function(err, stdout, stderr){
+                    console.log('dnoe!');
+                    cp.exec('cp /node/Dockerfile /node/' + username, function(err, stdout, stderr){
+                        console.log("start building image......")
+                        cp.exec('docker build /node/' + username + ' -t ' + username + 'node', function(err, stdout, stderr){
+                            console.log(stderr);
+                            console.log(stdout);
+                            console.log(stderr);
+                            console.log('done!');
+                            console.log("start creating container......")
+                            docker.createContainer({Image: username + 'node', name: username + 'node'}, function (err, container) {
+                                container.start(function (err, data) {
+                                    console.log(data);
+                                    console.log('done!');
+                                });
+                            });
+                        });
+                    });
                 });
             });
         });
