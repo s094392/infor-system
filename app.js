@@ -90,13 +90,16 @@ io.sockets.on('connection', function(socket){
     socket.on('newIpython', function(username, key) {
         if(checkToken(username, key)){
             db.open(function(err) {
-                db.collection('ipythonPortList', function(error, collection) {
-                    collection.findOne({using: false}, function(err, res) {
-                        collection.update({port: res.port}, {$set: {using: true}});
-                        db.collection('ipython', function(error, collection) {
-                            console.log({name: username+res.port, port: res.port, owner: username});
-                            collection.insert({name: username+res.port, port: res.port, owner: username});
-                        });
+                db.collection('ipython', function(error, collection) {
+                    collection.findAndModify({using: false}, [], {$set: { owner: username, isUsing: false, used: false, using: true}} , {new: true}, function(err, res){
+                        console.log("Find PORT: "+res.value.port+", and used by "+username);
+                        console.log({name: username+res.value.port, port: res.vlaue.port, owner: username});
+                        collection.find({owner: username}, {_id: 0}, function(err, res) {
+                            res.toArray(function(err, res) {
+                                console.log('EMITTT');
+                                socket.emit('giveIpython', res);
+                            });
+                        })
                     });
                 });
             });
@@ -278,7 +281,7 @@ io.sockets.on('connection', function(socket){
                 });
             });
             db.open(function(err){
-                db.collection('ipythonPortList', function(error, collection) {
+                db.collection('ipython', function(error, collection) {
                     collection.update({port: port}, {$set: {used: false}});
                 });
             });

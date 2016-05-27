@@ -50,7 +50,7 @@ router.route('/signup')
                     }
                     else{
                         bcrypt.hash(req.body.password, null, null, function(err, hash) {
-                            collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
+                            collection.insert({username: escape(req.body.username), password: hash, admin: false, ipython: 10, ipythonUsed: 0});
                         });
                         signupMail(req.body.username, req.body.password);
                         var lang = req.query.lang;
@@ -256,7 +256,7 @@ router.route('/admin/ipythons')
                                 res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'port used.' });
                             }
                             else{
-                                collection.insert({name: req.body.name, port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
+                                collection.insert({port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
                             }
                         });
                     });
@@ -289,7 +289,7 @@ router.route('/admin/ipythons/multi')
 .post(function(req, res) {
     db.open(function(err) {
         console.log(err);
-        db.collection('ipythonPortList', function(error, collection) {
+        db.collection('ipython', function(error, collection) {
             if(error)
                 console.log(error);
             var first = parseInt(req.body.first);

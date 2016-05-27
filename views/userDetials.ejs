@@ -12,6 +12,6 @@
     var socket = io();
     socket.emit('reqStatus', "<%= user.username %>");
     socket.on('giveStatus', function(res){
-        $('#status').append("Username: " + res.username + "<br>Workstation quota: " + res.workstation + "<br>Workstation used: " + res.workstationUsed );
+        $('#status').append("Username: " + res.username + "<br>Ipython quota: " + res.ipython + "<br>Ipython used: " + res.ipythonUsed );
     });
 </script>
