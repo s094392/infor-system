@@ -54,7 +54,7 @@
     
     socket.on('giveIpythonList', function(res){
         $("#ipython").empty();
-        for(i=0; i<res.length; i++){
+        for(var i=0; i<res.length; i++){
             if(res[i].isUsing){
                 $("#ipython").append("<a href='https://ipnb.infor.org:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
             }

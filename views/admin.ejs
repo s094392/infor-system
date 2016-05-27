@@ -29,8 +29,25 @@
         socket.emit('reqDocker');
     }
     socket.on('giveDocker', function(res){
+        console.log(res[0]);
         $("#logs").empty();
-        $("#logs").append("<pre style='font-family:monospace;'>" + res + "></pre>");
-    })
+        var data = '<table class="table table-striped table-hover ">\
+  <thead>\
+    <tr>\
+      <th>#</th>\
+      <th>Image</th>\
+      <th>IP address</th>\
+      <th>Ports</th>\
+      <th>State</th>\
+      <th>Status</th>\
+    </tr>\
+  </thead>\
+  <tbody>';
+        for(var i=0; i<res.length; i++){
+            data += "<tr><th>" + i + "</th><th>" + res[i].Image + "</th><th>" + res[i].NetworkSettings.Networks.bridge.IPAddress + "</th><th>" + res[i].Ports + "</th><th>" + res[i].State + "</th><th>" + res[i].Status + "</th><th>" + "</th></tr>";
+        }
+        data += '</tbody></table>';
+        $("#logs").append(data);
+    });
 </script>
 <% include footer.ejs %>
