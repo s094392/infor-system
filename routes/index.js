@@ -11,6 +11,7 @@ var mailId = config.mailId; var pkey = config.pkey;
 var Docker = require('dockerode');
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
+var Regex = require("regex");
 /* GET home page. */
 router.get('/', function(req, res) {
     if(req.session.user){
@@ -170,17 +171,25 @@ router.route('/node')
     res.render('node', { title: 'Node', user: req.session.user });
 })
 .post(function(req, res){
-    db.open(function(err){
-        console.log(err);
-        db.collection('node', function(error, collection){
-            if(error)
-                console.log(error);
-            collection.insert({owner: req.session.user.username, github: req.body.github});
-            console.log('insertttt');
-            openNode(req.session.user.username);
+    authentication(req, res);
+    var regGithub = new RegExp(/https:\/\/github.com\/.+.git/);
+    if(regGithub.test(req.body.github)){
+        db.open(function(err){
+            console.log(err);
+            db.collection('node', function(error, collection){
+                if(error)
+                    console.log(error);
+                collection.insert({owner: req.session.user.username, github: req.body.github});
+                console.log('insertttt');
+                openNode(req.session.user.username);
+            });
         });
-    });
-    res.redirect('/node');
+        res.redirect('/node');
+    }
+    else{
+        req.session.error = 'Wrong github address!!'
+        res.redirect('/node');
+    }
 });
 
 // Admin pages
@@ -345,6 +354,7 @@ function openNode(username){
                 console.log(error);
             collection.findOne({owner: username}, function(err, data){
                 console.log('jizz');
+                collection.update({ownser: username}, {$ser: {stats: 'building'}})
                 cp.exec('rm -rf /node/' + username);
                 console.log('cloning in to /node/' + username + '......');
                 cp.exec('git clone ' + data.github + ' /node/' + username, function(err, stdout, stderr){
@@ -362,6 +372,7 @@ function openNode(username){
                                 container.start(function (err, data) {
                                     console.log(data);
                                     console.log('done!');
+                                    collection.update({ownser: username}, {$ser: {status: 'done'}})
                                 });
                             });
                         });

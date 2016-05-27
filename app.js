@@ -234,6 +234,12 @@ io.sockets.on('connection', function(socket){
         });
     });
 
+    socket.on('reqNode', function(username, key){
+        cp.exec('docker logs ' + username + 'node', function(err, stdout, stderr){
+            console.log(stdout);
+            socket.emit('giveNode', stderr);
+        });
+    });
 
     // Ipython Notebook
     function openIpython(username, port, pw){
@@ -311,8 +317,16 @@ app.use(session({
     saveUninitialized: true
 }));
 
-app.use(function(req, res, next){
+
+app.use(function(req, res, next) {
     res.locals.user = req.session.user;
+    var err = req.session.error;
+    delete req.session.error;
+    res.locals.message = '';
+    if (err) {
+        res.locals.message = '<div class="alert alert-dismissible alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button><h4>Warning!</h4><p>' + err + '</p></div>';
+    }
+    console.log(res.locals);
     next();
 });
 
@@ -345,6 +359,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
+
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
@@ -352,6 +367,8 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
+
+
 
 server.listen(3000);
 //module.exports = app;

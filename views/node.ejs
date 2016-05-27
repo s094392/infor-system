@@ -10,9 +10,33 @@
               <li><a href="/">Home</a></li>
               <li class="active">Node</li>
             </ul>
+            <%- message %>
+            <legend><h2>Usage</h2></legend>
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#intro" data-toggle="tab" aria-expanded="true">Intro</a></li>
+              <li class=""><a href="#note" data-toggle="tab" aria-expanded="true">Note</a></li>
+            </ul>
+            <div id="myTabContent" class="tab-content">
+              <div class="tab-pane fade active in well" id="intro">
+                <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua, retro synth master cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan aliquip quis cardigan american apparel, butcher voluptate nisi qui.</p>
+              </div>
+              <div class="tab-pane fade well" id="note">
+                <p>You need to create 'start' method of yout package in package.json</p>
+                <blockquote>
+                  <p style='font-family: "Courier New", Courier, monospace;'>
+                      "scripts": {<br />
+                      &nbsp&nbsp&nbsp&nbsp"start": "node app.js"<br />
+                      },<br />
+                  </p>
+                  <small>package.json</small>
+                 </blockquote>
+              </div>
+            </div>
+            <legend><h2>Logs</h2></legend>
+            <pre class="well" id="logs"></pre>
             <form class="form-horizontal" method="post">
                 <fieldset>
-                    <legend>Node</legend>
+                    <legend><h2>Deploy</h2></legend>
                     <div class="form-group">
                         <label for="github" class="col-lg-2 control-label">Github repository of the package</label>
                         <div class="col-lg-10">
@@ -31,5 +55,9 @@
 </div>
 <script>
     var socket = io();
+    socket.emit('reqNode', "<%= user.username %>");
+    socket.on('giveNode', function(res){
+        $("#logs").append(res);
+    });
 </script>
 <% include footer.ejs %>
