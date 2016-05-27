@@ -6,9 +6,7 @@
             <% include userDetials.ejs %>
         </div>
         <div class="col-xs-10 col-md-10">
-            <ul class="breadcrumb">
-              <li><a href="/">Home</a></li>
-              <li class="active">Ipython notebook</li>
+            <ul class="breadcrumb"> <li><a href="/">Home</a></li> <li class="active">Ipython notebook</li>
             </ul>
 	    <div id="new">
 		<buttom class="btn btn-warning" onClick="newIpython()">New Ipython notebook</buttom>
@@ -60,11 +58,7 @@
     socket.on('giveIpythonList', function(res){
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
-                $("#ipython").append("<a href='https://localhost:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
-            }
-            else if(res[i].used){
-		var jizz = "pw0";
-                $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].name + " " + "<a href='#'  class='btn btn-primary' onClick='openIpython(" + res[i].port + ", null )'>open</a>" + "<a href='#' class='btn btn-danger' onClick='delIpython(" + res[i].port + ")'>remove</a>" + "</a><div id='" + res[i].port + "'></div>");
+                $("#ipython").append("<a href='https://ipnb.infor.org:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
             }
             else{
             $("#ipython").append("<a href='#' class='list-group-item'>" + res[i].name + " " + "<a href='#' class='btn btn-primary' data-toggle='modal' data-target='#myModal" + i + "' >open</a>" + "</a>");

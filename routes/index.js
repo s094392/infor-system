@@ -6,8 +6,10 @@ var db = require('../database/db');
 var fs = require('fs');
 var escape = require('escape-html');
 var config = require('../config.json');
-var mailId = config.mailId;
-var pkey = config.pkey;
+var mailId = config.mailId; var pkey = config.pkey;
+
+var Docker = require('dockerode');
+var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -164,7 +166,21 @@ router.get('/workstation', function(req, res){
 
 router.route('/node')
 .get(function(req, res){
+    authentication(req, res);
     res.render('node', { title: 'Node', user: req.session.user });
+})
+.post(function(req, res){
+    db.open(function(err){
+        console.log(err);
+        db.collection('node', function(error, collection){
+            if(error)
+                console.log(error);
+            collection.insert({owner: req.session.user.username, github: req.body.github});
+            console.log('insertttt');
+            openNode(req.session.user.username);
+        });
+    });
+    res.redirect('/node');
 });
 
 // Admin pages
@@ -314,9 +330,30 @@ function authentication(req, res) {
 }
 
 function signupMail(username, password){
+    var container = docker.getContainer(mailId);
+    container.exec({cmd: 'poste email:create ' + username + ' ' + password})
     cp.exec('docker exec ' + mailId + ' poste email:create ' + username + ' ' + password, function(err, stdout, stderr){
         console.log(stdout);
     });
 }
 
+function openNode(username){
+    db.open(function(err){
+        console.log(err);
+        db.collection('node', function(error, collection){
+            if(error)
+                console.log(error);
+            collection.findOne({owner: username}, function(err, data){
+                cp.exec('rm -rf /node' + username);
+                cp.exec('mkdir -p /node/' + username);
+                cp.exec('git clone ' + data.github + ' /node/' + username);
+                cp.exec('docker build /node/' + username + '/.');
+                cp.exec('docker run --name ' + username + 'node -v /node/' + username + ':/usr/src/app node', function(err, stdout, stderr){
+                    console.log(stdout);
+                    console.log('docker run --name ' + username + 'node -v /node/' + username + ':/usr/src/app node:4-onbuild');
+                });
+            });
+        });
+    });
+}
 module.exports = router;

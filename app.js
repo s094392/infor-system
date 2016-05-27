@@ -18,6 +18,8 @@ var bcrypt = require('bcrypt-nodejs');
 
 var cp = require('child_process');
 
+var Docker = require('dockerode');
+var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 var config = require('./config.json');
 var pkey = config.pkey;
@@ -226,10 +228,10 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('reqDocker', function(){
-        cp.exec('docker ps -a', function(err, stdout, stderr){
-            socket.emit('giveDocker', stdout);
-        })
-    })
+        docker.listContainers(function (err, containers) {
+            socket.emit('giveDocker', containers);
+        });
+    });
 
 
     // Ipython Notebook
@@ -252,19 +254,20 @@ io.sockets.on('connection', function(socket){
                     });
                 }
                 else{
-                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
-                        console.log('docker run ' + username + port + ' ipython.')
-                        if(stdout){
-                            console.log(stdout);
+                    docker.createContainer({Image: 'ipython/notebook', name: username + port, environment: {"PASSSWORD": pw}, portBinding: {"8888/tcp": [{"HostPort": toString(port)}]}}, function(err, container){
+                        console.log('loggg');
+                        container.start(function (err, data) {
+                            console.log(err);
+                            console.log(data);
                             collection.find({owner: username}, {_id: 0}, function(err, res){
                                 res.toArray(function(err, res){
                                     console.log("Emittttt.");
                                     socket.emit('giveIpythonList', res);
                                 });
                             });
-                        }
+                        });
                     });
-                    collection.update({owner: username, port: port}, {$set: {used: true}});
+                    collection.update({owner: username, port: port}, {$set: {isUsing: true}});
                     }
                 });
             });
@@ -272,11 +275,13 @@ io.sockets.on('connection', function(socket){
     }
 
     function closeIpython(username, port){
+        var container = docker.getContainer(username + port);
+        container.stop(function(err, data){
         console.log("cloaseipython");
-        cp.exec('docker stop ' + username + port, function(err, stdout, stderr){
-            console.log('docker stop ' + username + port + ' ipython.');
-            if(stdout){
-                console.log(stdout);
+            console.log(data);
+            container.remove(function(err, data){
+                console.log("removeipython");
+                console.log(data);
                 db.open(function(err){
                     db.collection('ipython', function(error, collection) {
                         collection.find({owner: username}, {_id: 0}, function(err, res){
@@ -285,37 +290,17 @@ io.sockets.on('connection', function(socket){
                                 socket.emit('giveIpythonList', res);
                             });
                         });
+                        collection.update({owner: username, port: port}, {$set: {isUsing: false}});
                     });
                 });
-            }
-        });
-    }
-
-    function delIpython(username, port){
-        console.log("removeipython");
-        cp.exec('docker rm ' + username + port, function(err, stdout, stderr){
-            console.log('docker rm ' + username + port + ' ipython.');
-            if(stdout){
-                console.log(stdout);
-                db.open(function(err){
-                    db.collection('ipython', function(error, collection) {
-                        collection.find({owner: username}, {_id: 0}, function(err, res){
-                            res.toArray(function(err, res){
-                                console.log("Emittttt.");
-                                socket.emit('giveIpythonList', res);
-                            });
-                        });
-                    });
+            });
+            db.open(function(err){
+                db.collection('ipythonPortList', function(error, collection) {
+                    collection.update({port: port}, {$set: {used: false}});
                 });
-            }
-        });
-        db.open(function(err){
-            db.collection('ipythonPortList', function(error, collection) {
-                collection.update({port: port}, {$set: {using: false}});
             });
         });
     }
-
 });
 
 
