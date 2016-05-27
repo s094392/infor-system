@@ -23,39 +23,37 @@
     var key = JSON.parse('<%- JSON.stringify(user.key) %>');
 
     function newIpython(){
-	console.log("new ipython");
-	socket.emit('newIpython', "<%= user.username %>", key);
-    $("#ipython").empty();
-    setTimeout('socket.emit("reqIpythonList", "<%= user.username %>", key)', 500);
+        console.log("new ipython");
+        socket.emit('newIpython', "<%= user.username %>", key);
+        $("#ipython").empty();
+        setTimeout('socket.emit("reqIpythonList", "<%= user.username %>", key)', 500);
     }
 
     function openIpython(port, pwId){
-        console.log(pwId);
-	    if(pwId){
-	        console.log("use pw");
+          console.log(pwId);
+	      if(pwId){
+	          console.log("use pw");
             var pw = pwId.value;
-	    }
-	    else{
-	        console.log("restart");
-	        var pw = "jizz"
-	    }
+	      }
+	      else{
+	          console.log("restart");
+	          var pw = "jizz"
+	      }
         socket.emit('openIpython', "<%= user.username %>", port, pw, key);
         $("#ipython").empty();
+        $("#ipython").append("<img src='/images/loading.gif'>")
     }
 
     function closeIpython(port){
         socket.emit('closeIpython', "<%= user.username %>", port, key);
         $("#ipython").empty();
-    }
-
-    function delIpython(port){
-        socket.emit('delIpython', "<%= user.username %>", port, key);
-        $("#ipython").empty();
+        $("#ipython").append("<img src='/images/loading.gif'>")
     }
 
     socket.emit('reqIpythonList', "<%= user.username %>", key);
     
     socket.on('giveIpythonList', function(res){
+        $("#ipython").empty();
         for(i=0; i<res.length; i++){
             if(res[i].isUsing){
                 $("#ipython").append("<a href='https://ipnb.infor.org:" + res[i].port + "'target='_blank' class='list-group-item'>" + res[i].name + " " + "<span class='label label-warning'>Running</span><a href='#' class='btn btn-warning' onClick='closeIpython(" + res[i].port + ")'>close</a>" + "</a>");
@@ -66,7 +64,7 @@
             }
         }
         if(res.length===0){
-		console.log('jizz out qt');
+            console.log('jizz out qt');
             $("#ipython").append("<div class='well'>Ha! Ha! You have no ipython notebook!</div>");
         }
         console.log(res);
