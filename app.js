@@ -91,15 +91,23 @@ io.sockets.on('connection', function(socket){
         if(checkToken(username, key)){
             db.open(function(err) {
                 db.collection('ipython', function(error, collection) {
-                    collection.findAndModify({using: false}, [], {$set: { owner: username, isUsing: false, used: false, using: true}} , {new: true}, function(err, res){
-                        console.log("Find PORT: "+res.value.port+", and used by "+username);
-                        console.log({name: username+res.value.port, port: res.vlaue.port, owner: username});
-                        collection.find({owner: username}, {_id: 0}, function(err, res) {
-                            res.toArray(function(err, res) {
-                                console.log('EMITTT');
-                                socket.emit('giveIpython', res);
+                    collection.findAndModify({portUsing: false}, [], {$set: { owner: username, using: false, portUsing: true}} , {new: true}, function(err, res){
+                        if(res){
+                            console.log("Find PORT: "+res.value.port+", and used by "+username);
+                            collection.find({owner: username}, {_id: 0}, function(err, res) {
+                                res.toArray(function(err, res) {
+                                    console.log('EMITTT');
+                                    socket.emit('giveIpython', res);
+                                });
                             });
-                        })
+                            db.collection('user', function(error, collection) {
+                                collection.update({username: username}, {$inc: {ipython: -1, ipythonUsed: 1}});
+                            });
+                        }
+                        else{
+                            //jizz????
+                            //
+                        }
                     });
                 });
             });
@@ -115,7 +123,7 @@ io.sockets.on('connection', function(socket){
                     collection.findOne({owner: username, port: port}, function(err, res){
                         console.log(res);
                         if(res){
-                            collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                            collection.update({owner: username, port: port}, {$set: {using: true}});
                             openIpython(username, port, pw);
                         }
                     });
@@ -133,28 +141,12 @@ io.sockets.on('connection', function(socket){
                     collection.findOne({owner: username, port: port}, function(err, res){
                         console.log(res);
                         if(res){
-                            collection.update({owner: username, port: port}, {$set: {isUsing: false}});
+                            collection.update({owner: username, port: port}, {$set: {portUsing: false, owner: null, using: false}});
                             closeIpython(username, port);
                         }
-                    });
-                });
-            });
-        }
-    });
-
-    socket.on('delIpython', function(username, port, key){
-        if(checkToken(username, key)){
-            port = parseInt(port);
-            db.open(function(err){
-                db.collection('ipython', function(error, collection){
-                    console.log(username+' delete ipython notebook on '+port);
-                    collection.findOne({owner: username, port: port}, function(err, res){
-                        console.log(res);
-                        if(res){
-                            delIpython(username, port);
-                            collection.update({owner: username, port: port}, {$set: {used: false}});
-                        }
-			            collection.dropIndex(port);
+                        db.collection('user', function(error, collection) {
+                            collection.update({username: username}, {$inc: {ipython: 1, ipythonUsed: -1}});
+                        });
                     });
                 });
             });
@@ -251,7 +243,6 @@ io.sockets.on('connection', function(socket){
                             res.toArray(function(err, res){
                                 console.log("Emittttt.");
                                 socket.emit('giveIpythonList', res);
-                                collection.update({owner: username, port: port}, {$set: {isUsing: true}});
                             });
                         });
                     });

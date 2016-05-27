@@ -256,7 +256,7 @@ router.route('/admin/ipythons')
                                 res.render('ipythonAdmin', { title: 'Ipython', user: req.session.user, wrong: 'port used.' });
                             }
                             else{
-                                collection.insert({port: parseInt(req.body.port), owner: req.body.owner, isUsing: false});
+                                collection.insert({port: parseInt(req.body.port), portUsing: false, owner: req.body.owner, using: false});
                             }
                         });
                     });
@@ -295,7 +295,7 @@ router.route('/admin/ipythons/multi')
             var first = parseInt(req.body.first);
             var number = parseInt(req.body.number);
             for(var i=first; i<first+number; i++){
-                collection.insert({port: i, using: false});
+                collection.insert({port: i, portUsing: false});
             }
         });
     });
