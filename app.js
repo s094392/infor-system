@@ -43,6 +43,7 @@ io.sockets.on('connection', function(socket){
             db.collection('user', function(error, collection){
                 collection.findOne({username: username}, function(err, res){
                     socket.emit('giveStatus', res);
+console.log("emited reqStatus");
                 });
             });
         }); 
@@ -97,11 +98,11 @@ io.sockets.on('connection', function(socket){
                             collection.find({owner: username}, {_id: 0}, function(err, res) {
                                 res.toArray(function(err, res) {
                                     console.log('EMITTT');
+                                    db.collection('user', function(error, collection) {
+                                        collection.update({username: username}, {$inc: {ipython: -1, ipythonUsed: 1}});
+                                    });
                                     socket.emit('giveIpython', res);
                                 });
-                            });
-                            db.collection('user', function(error, collection) {
-                                collection.update({username: username}, {$inc: {ipython: -1, ipythonUsed: 1}});
                             });
                         }
                         else{
@@ -258,7 +259,7 @@ io.sockets.on('connection', function(socket){
         db.open(function(err) {
             db.collection('ipython', function(error, collection) {
                 collection.findOne({owner: username, port: port}, function(err, res) {
-                    cp.exec('docker run -d -p ' + port + ':8888 --name' + username+port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr) {
+                    cp.exec('docker run -d -p ' + port + ':8888 --name ' + username+port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr) {
                         if(stdout){
                             console.log(stdout);
                             collection.find({owner: username}, {_id: 0}, function(err, res) {

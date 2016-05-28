@@ -12,6 +12,7 @@
     var socket = io();
     socket.emit('reqStatus', "<%= user.username %>");
     socket.on('giveStatus', function(res){
+console.log("received.");
         $('#status').append("Username: " + res.username + "<br>Ipython quota: " + res.ipython + "<br>Ipython used: " + res.ipythonUsed );
     });
 </script>
