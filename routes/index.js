@@ -12,6 +12,8 @@ var Docker = require('dockerode');
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 var Regex = require("regex");
+var Git = require("nodegit");
+
 /* GET home page. */
 router.get('/', function(req, res) {
     if(req.session.user){
@@ -353,27 +355,27 @@ function openNode(username){
             if(error)
                 console.log(error);
             collection.findOne({owner: username}, function(err, data){
-                console.log('jizz');
                 collection.update({ownser: username}, {$ser: {stats: 'building'}})
-                cp.exec('rm -rf /node/' + username);
-                console.log('cloning in to /node/' + username + '......');
-                cp.exec('git clone ' + data.github + ' /node/' + username, function(err, stdout, stderr){
-                    console.log('dnoe!');
-                    cp.exec('cp /node/Dockerfile /node/' + username, function(err, stdout, stderr){
-                        console.log("start building image......");
-                        console.log('docker build /node/' + username + ' -t ' + username + 'node');
-                        cp.exec('docker build' + ' -t ' + username + 'node /node/' + username , function(err, stdout, stderr){
-                            console.log(stderr);
-                            console.log(stdout);
-                            console.log(stderr);
-                            console.log('done!');
-                            console.log("start creating container......")
-                            docker.createContainer({Image: username + 'node', name: username + 'node'}, function (err, container) {
-                                container.start(function (err, data) {
-                                    console.log(data);
+                cp.exec('rm -rf /node/' + username, function(err, stdout, stderr){
+                    console.log('cloning in to /node/' + username + '......');
+                    Git.Clone(data.github, '/node/' + username).then(function(){
+                        console.log('done!');
+                        cp.exec('cp /node/Dockerfile /node/' + username, function(err, stdout, stderr){
+                            console.log("start building image......");
+                            console.log('docker build /node/' + username + ' -t ' + username + 'node');
+                            cp.exec('docker build' + ' -t ' + username + 'node /node/' + username , function(err, stdout, stderr){
+                                if(stdout){
+                                    console.log(stdout);
                                     console.log('done!');
-                                    collection.update({ownser: username}, {$ser: {status: 'done'}})
-                                });
+                                    console.log("start creating container......")
+                                    docker.createContainer({Image: username + 'node', name: username + 'node'}, function (err, container) {
+                                        container.start(function (err, data) {
+                                            console.log(data);
+                                            console.log('done!');
+                                            collection.update({ownser: username}, {$ser: {status: 'done'}})
+                                        });
+                                    });
+                                }
                             });
                         });
                     });
