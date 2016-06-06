@@ -35,35 +35,40 @@ router.route('/signup')
 })
 .post(function(req, res) {
     console.log(req.files);
-    db.open(function(err){
-        if(err)
-            console.log(err);
-        db.collection('user', function(error, collection){
-            if(error)
-                console.log(error);
-            collection.findOne({username: req.body.username}, function(err, data) {
-                if(data)
-                    res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
-                else{
-                    if( req.body.password !== req.body.passwordV ){
-                        res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
-                    }
+    if(req.body.gogogo=="inforgogogo"){
+        db.open(function(err){
+            if(err)
+                console.log(err);
+            db.collection('user', function(error, collection){
+                if(error)
+                    console.log(error);
+                collection.findOne({username: req.body.username}, function(err, data) {
+                    if(data)
+                        res.render('signup', { title: 'Sign up', wrong: 'You cannot use this username.' });
                     else{
-                        bcrypt.hash(req.body.password, null, null, function(err, hash) {
-                            collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
-                        });
-                        signupMail(req.body.username, req.body.password);
-                        var lang = req.query.lang;
-                        
-                        if(lang==='ar')
-                        res.redirect('/login?lang=ar');
-                        else
-                        res.redirect('/login');
+                        if( req.body.password !== req.body.passwordV ){
+                            res.render('signup', { title: 'Sign up', wrong: 'Password Validation Error' });
+                        }
+                        else{
+                            bcrypt.hash(req.body.password, null, null, function(err, hash) {
+                                collection.insert({username: escape(req.body.username), password: hash, admin: false, workstation: 1});
+                            });
+                            signupMail(req.body.username, req.body.password);
+                            var lang = req.query.lang;
+                            
+                            if(lang==='ar')
+                            res.redirect('/login?lang=ar');
+                            else
+                            res.redirect('/login');
+                        }
                     }
-                }
+                });
             });
         });
-    });
+    }
+    else{
+        res.redirect('/login');
+    }
 });
  
 router.route('/login')

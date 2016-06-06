@@ -237,6 +237,24 @@ io.sockets.on('connection', function(socket){
 
     // Ipython Notebook
     function openIpython(username, port, pw){
+        cp.exec('docker run -d -p ' + port + ':8888 --name ' + username + port + ' -e "PASSWORD=' + pw + '" ipython/notebook', function(err, stdout, stderr){
+-			console.log('docker run ' + username + port + ' ipython.')
+            if(stdout){
+                console.log(stdout);
+                db.open(function(err){
+                    db.collection('ipython',function(error, collection){
+                        collection.find({owner: username}, {_id: 0}, function(err, res){
+                            res.toArray(function(err, res){
+                                console.log("Emittttt.");
+                                socket.emit('giveIpythonList', res);
+                                collection.update({owner: username, port: port}, {$set: {isUsing: true}});
+                            });
+                        });
+                    });
+                });
+			}
+        });
+        /*
         docker.createContainer({Image: 'ipython/notebook', name: username + port, Env: ["PASSWORD=" + pw], Ports: {"8888/tcp": [{"HostIp": "0.0.0.0", "HostPort": toString(port)}]}}, function(err, container){
             console.log(err);
             container.start(function (err, data) {
@@ -255,6 +273,7 @@ io.sockets.on('connection', function(socket){
                 });
             });
         });
+        */
     }
 
     function closeIpython(username, port){
